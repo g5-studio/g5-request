@@ -1,12 +1,12 @@
 import React from "react";
-import "./App.css";
+// import "./App.css"; // Removed
 import RequestContainer from "./RequestContainer";
 import { ThemeProvider } from "../contexts/ThemeContext";
 
 const App: React.FC = () => {
   return (
     <ThemeProvider>
-      <div className="nui-wrapper">
+      <div className="h-full flex justify-start items-start text-left">
         <RequestContainer />
       </div>
     </ThemeProvider>

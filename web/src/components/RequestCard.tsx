@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { useTheme } from "../contexts/ThemeContext";
+import { Card, CardContent, CardFooter } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { cn } from "../utils/cn";
 
 export type RequestData = {
   id: string | number;
@@ -116,51 +119,27 @@ const RequestCard: React.FC<Props> = ({ req, acceptKey, denyKey, onExpire, onRem
   const rafRef = useRef<number | null>(null);
   const { themes } = useTheme();
 
+  // Pega o tema para aplicar inline como fallback
+  const themeType = req.themeType || 'default';
+  const cardTheme = themes[themeType] || themes['default'];
+
+  // Calculate generic contrasting foregrounds if needed
+  const tagBg = req.tagColor || cardTheme?.tag_bg;
+  const tagFg = req.tagColor
+    ? _getContrastColor(req.tagColor)
+    : (cardTheme?.tag_fg || (tagBg ? _getContrastColor(tagBg) : undefined));
+
+  const codeBg = req.codeColor || cardTheme?.code_bg;
+  const codeFg = req.codeColor
+    ? _getContrastColor(req.codeColor)
+    : (cardTheme?.code_fg || (codeBg ? _getContrastColor(codeBg) : undefined));
+
+  const progressColor = req.progressColor || cardTheme?.progress_color || cardTheme?.accent;
+
   useEffect(() => {
     // initialize styles
     const el = elRef.current;
     if (!el) return;
-    
-    // Aplica o tema específico deste card
-    const themeType = req.themeType || 'default';
-    const cardTheme = themes[themeType] || themes['default'];
-    
-    // Debug logs
-    console.log('[RequestCard] Aplicando tema:', {
-      requestId: req.id,
-      themeType,
-      hasTheme: !!cardTheme,
-      cardBg: cardTheme?.card_bg,
-      availableThemes: Object.keys(themes)
-    });
-    
-    if (cardTheme) {
-      // Aplica todas as propriedades do tema como CSS variables locais neste card
-      if (cardTheme.card_bg) el.style.setProperty("--card-bg", cardTheme.card_bg);
-      if (cardTheme.title_bg) el.style.setProperty("--title-bg", cardTheme.title_bg);
-      if (cardTheme.text) el.style.setProperty("--text", cardTheme.text);
-      if (cardTheme.muted) el.style.setProperty("--muted", cardTheme.muted);
-      if (cardTheme.tag_bg) el.style.setProperty("--tag-bg", cardTheme.tag_bg);
-      if (cardTheme.tag_fg) el.style.setProperty("--tag-fg", cardTheme.tag_fg);
-      if (cardTheme.code_bg) el.style.setProperty("--code-bg", cardTheme.code_bg);
-      if (cardTheme.code_fg) el.style.setProperty("--code-fg", cardTheme.code_fg);
-      if (cardTheme.progress_bg) el.style.setProperty("--progress-bg", cardTheme.progress_bg);
-      if (cardTheme.progress_color) el.style.setProperty("--progress-color", cardTheme.progress_color);
-      if (cardTheme.accent) el.style.setProperty("--accent", cardTheme.accent);
-      
-      console.log('[RequestCard] Tema aplicado com sucesso para request:', req.id);
-    } else {
-      console.warn('[RequestCard] Nenhum tema encontrado para:', themeType);
-    }
-    
-    // Cores personalizadas sobrescrevem o tema
-    if (req.tagColor) el.style.setProperty("--tag-bg", req.tagColor);
-    if (req.progressColor) el.style.setProperty("--progress-color", req.progressColor);
-    if (req.codeColor) el.style.setProperty("--code-bg", req.codeColor);
-
-    if (req.tagColor) el.style.setProperty("--tag-fg", _getContrastColor(req.tagColor));
-    if (req.progressColor) el.style.setProperty("--progress-fg", _getContrastColor(req.progressColor));
-    if (req.codeColor) el.style.setProperty("--code-fg", _getContrastColor(req.codeColor));
 
     // play sound once on mount (arrival)
     try {
@@ -261,9 +240,10 @@ const RequestCard: React.FC<Props> = ({ req, acceptKey, denyKey, onExpire, onRem
         const value = item.value;
         if (value === null || value === undefined || value === "") return null;
         return (
-          <div className="mutedline extra-item" key={idx}>
-            <i className={`fa fa-${_esc(icon || "")}`} style={{ marginRight: 6 }} />
-            <strong>{_esc(name || "")}</strong>: {_esc(value)}
+          <div className="text-sm text-muted-foreground mt-1.5 flex items-center gap-2" key={idx}>
+            <i className={`fa fa-${_esc(icon || "")} w-4 text-center`} />
+            <span className="font-semibold">{_esc(name || "")}:</span>
+            <span>{_esc(value)}</span>
           </div>
         );
       });
@@ -273,60 +253,96 @@ const RequestCard: React.FC<Props> = ({ req, acceptKey, denyKey, onExpire, onRem
       return Object.entries(extrasObj).map(([k, v]: any, idx) => {
         if (v === null || v === undefined || v === "") return null;
         return (
-          <div className="mutedline extra-item" key={idx}>
-            <i className={`fa fa-${_esc(k)}`} style={{ marginRight: 6 }} />
-            <strong>{_esc(k)}</strong>: {_esc(v)}
+          <div className="text-sm text-muted-foreground mt-1.5 flex items-center gap-2" key={idx}>
+            <i className={`fa fa-${_esc(k)} w-4 text-center`} />
+            <span className="font-semibold">{_esc(k)}:</span>
+            <span>{_esc(v)}</span>
           </div>
         );
       });
     }
 
-    return <div className="mutedline">{_esc(typeof extras === "string" ? extras : JSON.stringify(extras))}</div>;
+    return <div className="text-sm text-muted-foreground mt-1.5">{_esc(typeof extras === "string" ? extras : JSON.stringify(extras))}</div>;
   }
 
-  // Pega o tema para aplicar inline como fallback
-  const themeType = req.themeType || 'default';
-  const cardTheme = themes[themeType] || themes['default'];
-
   return (
-    <div 
-      className="request-card" 
-      ref={elRef} 
+    <Card
+      className="request-card w-[360px] relative overflow-hidden transition-all duration-300 border border-white/10 bg-[#121214] shadow-2xl rounded-xl"
+      ref={elRef}
       data-id={String(req.id)}
       style={{
-        background: cardTheme?.card_bg || undefined
+        background: cardTheme?.card_bg, // Allow override but default to dark
       }}
     >
-      <div className="request-progress">
-        <div className="bar" ref={barRef} />
+      {/* Progress Bar - Ultra thin gradient */}
+      <div className="absolute left-0 top-0 h-[2px] w-full bg-white/5 z-20">
+        <div className="h-full w-full transition-all ease-linear shadow-[0_0_10px_rgba(16,185,129,0.5)]" ref={barRef} style={{ backgroundColor: progressColor }} />
       </div>
-      <div className="top-row" style={{
-        backgroundColor: cardTheme?.title_bg || undefined
-      }}>
-        {req.tagText || req.tag ? <div className="tag">{_esc(req.tagText) || `#${_esc(req.tag || "")}`}</div> : null}
-        {req.code ? <div className="code">{_esc(req.code)}</div> : null}
-        {req.title ? (
-          <div className="title" style={{ marginLeft: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <span className="title-text">{_esc(req.title)}</span>
-            {req.titleIcon ? (
-              <span className="title-icon" style={{ marginLeft: 8 }}>
-                <i className={`fa fa-${_esc(req.titleIcon)}`} aria-hidden="true" style={req.titleIconColor ? { color: req.titleIconColor } : {}} />
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-      <div className="card-body">
-        {_renderExtras(req.extras)}
 
-        <div className="card-footer">
-          <div className="mutedline small">
-            <div className="ghost">[{acceptKey}] {req.acceptText ?? "Aceitar"}</div>
-            <div className="btn ghost">[{denyKey}] {req.denyText ?? "Recusar"}</div>
-          </div>
+      {/* Header Area */}
+      <div
+        className="flex items-center justify-between p-4 border-b border-white/5 bg-white/[0.02]"
+        style={{ backgroundColor: cardTheme?.title_bg }}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+             {/* Title Group */}
+             <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                    {req.titleIcon && (
+                        <i className={`fa fa-${_esc(req.titleIcon)} text-muted-foreground text-xs`} style={{ color: req.titleIconColor || undefined }} />
+                    )}
+                    <span className="font-bold text-sm text-white leading-none truncate max-w-[180px]">{_esc(req.title)}</span>
+                </div>
+                 {/* Subtitle/Badges Row */}
+                <div className="flex items-center gap-2 mt-1.5">
+                    {(req.tagText || req.tag) && (
+                    <Badge
+                        className="rounded-[4px] px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wider border-0"
+                        style={{
+                        backgroundColor: tagBg || 'rgba(255,255,255,0.1)',
+                        color: tagFg || '#fff'
+                        }}
+                    >
+                        {_esc(req.tagText) || `#${_esc(req.tag || "")}`}
+                    </Badge>
+                    )}
+                    {req.code && (
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                        {_esc(req.code)}
+                    </span>
+                    )}
+                </div>
+             </div>
         </div>
       </div>
-    </div>
+
+      <CardContent className="p-4">
+        {/* Render Extras as a grid of info items */}
+        <div className="grid grid-cols-1 gap-1">
+            {_renderExtras(req.extras)}
+        </div>
+      </CardContent>
+
+      <CardFooter className="p-4 pt-0">
+        <div className="grid grid-cols-2 gap-3 w-full">
+            {/* Accept Button */}
+          <div className="group relative flex items-center justify-center gap-2 bg-[#1c1c1f] hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/50 rounded-lg p-2.5 transition-all cursor-default">
+             <div className="flex items-center justify-center h-5 w-5 rounded bg-emerald-500/20 text-emerald-500 text-[10px] font-bold group-hover:bg-emerald-500 group-hover:text-black transition-colors">
+                 {acceptKey}
+             </div>
+             <span className="text-xs font-semibold text-muted-foreground group-hover:text-emerald-500 transition-colors uppercase tracking-wide">{req.acceptText ?? "Accept"}</span>
+          </div>
+
+          {/* Deny Button */}
+          <div className="group relative flex items-center justify-center gap-2 bg-[#1c1c1f] hover:bg-red-500/10 border border-white/5 hover:border-red-500/50 rounded-lg p-2.5 transition-all cursor-default">
+             <div className="flex items-center justify-center h-5 w-5 rounded bg-red-500/20 text-red-500 text-[10px] font-bold group-hover:bg-red-500 group-hover:text-black transition-colors">
+                 {denyKey}
+             </div>
+             <span className="text-xs font-semibold text-muted-foreground group-hover:text-red-500 transition-colors uppercase tracking-wide">{req.denyText ?? "Refuse"}</span>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 

@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { isEnvBrowser } from "../utils/misc";
 import { useTheme } from "../contexts/ThemeContext";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
 
 const DevPanel: React.FC = () => {
   const [title, setTitle] = useState("Pedido de Ajuda");
@@ -72,99 +77,133 @@ const DevPanel: React.FC = () => {
     }
   };
 
-  const containerStyle: React.CSSProperties = {
-    position: 'fixed',
-    bottom: 16,
-    left: 16,
-    background: '#0f1724',
-    color: '#e6eef0',
-    padding: 12,
-    borderRadius: 8,
-    boxShadow: '0 8px 24px rgba(2,6,23,0.6)',
-    width: 320,
-    zIndex: 99999,
-    fontSize: 13,
-  };
-
-  const inputStyle: React.CSSProperties = { width: '100%', marginTop: 6, padding: 6, borderRadius: 6, background: '#0b1220', color: '#e6eef0', border: '1px solid rgba(255,255,255,0.04)' };
-  const btnStyle: React.CSSProperties = { padding: '6px 8px', borderRadius: 6, border: 'none', cursor: 'pointer' };
-
   return (
-    <div className="dev-panel" style={{ ...containerStyle, pointerEvents: 'auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <strong>Dev Test Panel</strong>
-        <div style={{ fontSize: 12, color: '#9aa4ad' }}>Dev only</div>
-      </div>
-      <div style={{ display: 'block', gap: 8 }}>
-        <div>
-          <label style={{ fontSize: 12, color: '#9aa4ad' }}>ID</label>
-          <input style={inputStyle} value={id} onChange={(e) => setId(Number(e.target.value))} />
-        </div>
-        <div>
-          <label style={{ fontSize: 12, color: '#9aa4ad' }}>Title</label>
-          <input style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} />
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: 12, color: '#9aa4ad' }}>Tag</label>
-            <input style={inputStyle} value={tag} onChange={(e) => setTag(e.target.value)} />
+    <Card className="fixed bottom-6 left-6 w-[360px] z-[99999] pointer-events-auto shadow-2xl bg-[#111113]/95 backdrop-blur-md border border-white/5 rounded-xl text-xs">
+      <CardHeader className="pb-3 border-b border-white/5 bg-white/[0.02]">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <CardTitle className="text-sm font-bold tracking-wide">DEV CONTROLS</CardTitle>
           </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: 12, color: '#9aa4ad' }}>Code</label>
-            <input style={inputStyle} value={code} onChange={(e) => setCode(e.target.value)} />
-          </div>
+          <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-muted-foreground uppercase font-mono">v0.2.0</span>
         </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: 12, color: '#9aa4ad' }}>Timeout ms</label>
-            <input style={inputStyle} value={timeout} onChange={(e) => setTimeoutVal(Number(e.target.value))} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: 12, color: '#9aa4ad' }}>Sound</label>
-            <input style={inputStyle} value={sound} onChange={(e) => setSound(e.target.value)} />
-          </div>
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <label style={{ fontSize: 12, color: '#9aa4ad' }}>Position</label>
-          <select style={{ width: '100%', marginTop: 6, padding: 6, borderRadius: 6, background: '#0b1220', color: '#e6eef0', border: '1px solid rgba(255,255,255,0.04)' }} value={position} onChange={(e) => setPosition(e.target.value as any)}>
-            <option value="top-right">Top Right</option>
-            <option value="top-left">Top Left</option>
-          </select>
-        </div>
-        
-        <div style={{ marginTop: 8 }}>
-          <label style={{ fontSize: 12, color: '#9aa4ad' }}>Theme Type</label>
-          <select style={{ width: '100%', marginTop: 6, padding: 6, borderRadius: 6, background: '#0b1220', color: '#e6eef0', border: '1px solid rgba(255,255,255,0.04)' }} value={themeType} onChange={(e) => setThemeType(e.target.value)}>
-            <option value="default">Default (Verde)</option>
-            <option value="ambulancia">Ambulância (Vermelho)</option>
-            <option value="police">Police (Azul)</option>
-            <option value="bombeiro">Bombeiro (Laranja)</option>
-            <option value="recrutamento">Recrutamento (Roxo)</option>
-          </select>
+      </CardHeader>
+      <CardContent className="grid gap-4 p-4">
+        {/* Request Data Section */}
+        <div className="space-y-3">
+            <div className="flex items-center justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
+                <span>Request Data</span>
+            </div>
+            <div className="grid grid-cols-6 gap-2">
+                <div className="col-span-1 flex items-center justify-center">
+                   <Label htmlFor="id" className="sr-only">ID</Label>
+                   <Input id="id" className="h-8 text-center px-0 bg-black/20 border-white/10" placeholder="ID" value={id} onChange={(e) => setId(Number(e.target.value))} />
+                </div>
+                <div className="col-span-5">
+                   <Label htmlFor="title" className="sr-only">Title</Label>
+                   <Input id="title" className="h-8 bg-black/20 border-white/10" placeholder="Request Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+                <Input className="h-8 bg-black/20 border-white/10" placeholder="Tag (e.g. #VIP)" value={tag} onChange={(e) => setTag(e.target.value)} />
+                <Input className="h-8 bg-black/20 border-white/10" placeholder="Code (e.g. 10-20)" value={code} onChange={(e) => setCode(e.target.value)} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+                <div className="relative">
+                    <Input className="h-8 bg-black/20 border-white/10 pr-8" placeholder="Timeout" value={timeout} onChange={(e) => setTimeoutVal(Number(e.target.value))} />
+                    <span className="absolute right-2 top-2 text-[10px] text-muted-foreground">ms</span>
+                </div>
+                <Input className="h-8 bg-black/20 border-white/10" placeholder="Sound File" value={sound} onChange={(e) => setSound(e.target.value)} />
+            </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, paddingTop: 8 }}>
-          <button style={{ ...btnStyle, background: '#10b981', color: '#042018', flex: 1 }} onClick={addRequest}>Add</button>
-          <button style={{ ...btnStyle, background: '#f59e0b', color: '#111827', flex: 1 }} onClick={prolongRequest}>Prolong</button>
-        </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-          <button style={{ ...btnStyle, background: '#dc2626', color: '#fff', flex: 1 }} onClick={removeRequest}>Remove</button>
-          <button style={{ ...btnStyle, background: '#16a34a', color: '#fff', flex: 1 }} onClick={flashAccept}>Flash✓</button>
-          <button style={{ ...btnStyle, background: '#374151', color: '#fff', flex: 1 }} onClick={flashDeny}>Flash✕</button>
-        </div>
-        <div style={{ display: 'flex', gap: 8, paddingTop: 8 }}>
-          <button style={{ ...btnStyle, width: '100%', background: '#334155', color: '#fff', flex: 1 }} onClick={init}>Init</button>
-          <button style={{ ...btnStyle, width: '100%', background: '#8b5cf6', color: '#fff', flex: 1 }} onClick={changeTheme}>Apply Theme</button>
+        {/* Configurations */}
+        <div className="space-y-3">
+             <div className="flex items-center justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
+                <span>Configuration</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+                <select
+                    className="flex h-8 w-full items-center justify-between rounded-md border border-white/10 bg-black/20 px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
+                    value={position}
+                    onChange={(e) => setPosition(e.target.value as any)}
+                >
+                    <option value="top-right">↗ Top Right</option>
+                    <option value="top-left">↖ Top Left</option>
+                </select>
+                <select
+                    className="flex h-8 w-full items-center justify-between rounded-md border border-white/10 bg-black/20 px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
+                    value={themeType}
+                    onChange={(e) => setThemeType(e.target.value)}
+                >
+                    <option value="default">Default (Green)</option>
+                    <option value="ambulancia">Ambulance (Red)</option>
+                    <option value="police">Police (Blue)</option>
+                    <option value="bombeiro">Fire (Orange)</option>
+                    <option value="recrutamento">Recruit (Purple)</option>
+                </select>
+            </div>
         </div>
 
-        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <label style={{ fontSize: 12, color: '#9aa4ad', fontWeight: 'bold' }}>Custom Theme (JSON)</label>
-          <textarea value={themeInput} onChange={(e) => setThemeInput(e.target.value)} style={{ width: '100%', height: 96, fontFamily: 'monospace', fontSize: 12, marginTop: 6, padding: 6, borderRadius: 6, background: '#0b1220', color: '#e6eef0', border: '1px solid rgba(255,255,255,0.04)' }} placeholder='{"card_bg": "rgba(0,0,0,0.8)", ...}' />
-          <button style={{ ...btnStyle, width: '100%', background: '#3b82f6', color: '#fff', marginTop: 6 }} onClick={applyCustomTheme}>Apply Custom Theme</button>
+        {/* Actions Grid */}
+        <div className="space-y-3">
+            <div className="flex items-center justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">
+                <span>Actions</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 font-semibold" onClick={addRequest}>
+                    <i className="fa fa-plus mr-2"></i> Send Request
+                </Button>
+                <Button size="sm" variant="secondary" className="h-8 border border-white/10 bg-white/5 hover:bg-white/10" onClick={prolongRequest}>
+                    <i className="fa fa-clock-o mr-2"></i> Prolong
+                </Button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+                <Button size="sm" className="h-8 bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30 border border-emerald-500/20" onClick={flashAccept}>
+                    ACEPTAR
+                </Button>
+                <Button size="sm" className="h-8 bg-red-500/20 text-red-500 hover:bg-red-500/30 border border-red-500/20" onClick={flashDeny}>
+                    RECUSAR
+                </Button>
+                <Button size="sm" variant="destructive" className="h-8" onClick={removeRequest}>
+                    <i className="fa fa-trash"></i>
+                </Button>
+            </div>
+             <div className="grid grid-cols-2 gap-2 mt-2">
+                <Button size="sm" variant="outline" className="h-8 border-white/10 text-muted-foreground" onClick={init}>
+                    <i className="fa fa-refresh mr-2"></i> Re-Init
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 border-white/10 text-muted-foreground" onClick={changeTheme}>
+                    <i className="fa fa-paint-brush mr-2"></i> Apply Theme
+                </Button>
+            </div>
         </div>
-      </div>
-    </div>
+
+        {/* Custom JSON */}
+        <div className="pt-2 border-t border-white/5">
+             <div className="flex items-center gap-2 mb-2 cursor-pointer" onClick={() => {
+                 const el = document.getElementById('json-area');
+                 if(el) el.classList.toggle('hidden');
+             }}>
+                <span className="text-[10px] uppercase font-bold text-muted-foreground hover:text-white transition-colors">Advanced Theme JSON ▾</span>
+            </div>
+             <div id="json-area" className="hidden space-y-2">
+                 <Textarea
+                    className="h-20 font-mono text-[10px] bg-black/40 border-white/10 resize-none text-muted-foreground focus:text-white"
+                    value={themeInput}
+                    onChange={(e) => setThemeInput(e.target.value)}
+                    placeholder='{"card_bg": "rgba(0,0,0,0.8)", ...}'
+                />
+                <Button size="sm" variant="secondary" className="w-full h-7 text-[10px]" onClick={applyCustomTheme}>Apply JSON</Button>
+             </div>
+        </div>
+
+      </CardContent>
+    </Card>
   );
 };
+
 
 export default DevPanel;
