@@ -3,20 +3,31 @@ local resourceName = GetCurrentResourceName()
 local QBCore = exports['qb-core']:GetCoreObject()
 local requests = {}
 
+local function GetCallsign()
+    local playerData = QBCore.Functions.GetPlayerData()
+    return LocalPlayer.state.callsign
+        or (playerData and playerData.metadata and playerData.metadata.callsign)
+        or "UNIT"
+end
+
+-- Attach the local player as a responding unit on a dispatch.
+local function AttachUnit(dispatchId)
+    if not dispatchId then return end
+    TriggerServerEvent(resourceName..':server:attachUnit', dispatchId, { callsign = GetCallsign() })
+end
+exports('AttachUnit', AttachUnit)
+
+-- Detach the local player from a dispatch (leave "en route").
+local function DetachUnit(dispatchId)
+    if not dispatchId then return end
+    TriggerServerEvent(resourceName..':server:detachUnit', dispatchId)
+end
+exports('DetachUnit', DetachUnit)
+
 local function AcceptRequest(request)
     if not request then return end
 
-    -- Attach to unit
-    local playerData = QBCore.Functions.GetPlayerData()
-    -- Prioritize cached callsign from NUI, then QBCore metadata, then fallback
-    local callsign = LocalPlayer.state.callsign or playerData.metadata.callsign or "UNIT"
-
-    local unitData = {
-        source = GetPlayerServerId(PlayerId()),
-        callsign = callsign
-    }
-
-    TriggerServerEvent(resourceName..':server:attachUnit', request.id, unitData)
+    AttachUnit(request.id)
 
     -- Set Waypoint
     if request.coords or (request.x and request.y) then
@@ -27,6 +38,19 @@ local function AcceptRequest(request)
     -- Optional: Flash UI to indicate interaction
     SendNUIMessage({action = 'flashAccept', id = request.id})
 end
+
+RegisterNUICallback('attachUnit', function(data, cb)
+    if data and data.id then
+        AttachUnit(data.id)
+        if data.x and data.y then SetNewWaypoint(data.x, data.y) end
+    end
+    cb({ok = true})
+end)
+
+RegisterNUICallback('detachUnit', function(data, cb)
+    if data and data.id then DetachUnit(data.id) end
+    cb({ok = true})
+end)
 
 RegisterNUICallback('saveCallsign', function(data, cb)
     if data.callsign then
