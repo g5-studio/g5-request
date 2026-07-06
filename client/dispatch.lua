@@ -38,7 +38,6 @@ end
 exports('getDispatchData', GetDispatchData)
 
 exports('createDispatch', function(data)
-    print('createDispatch', json.encode(data))
     if not data then return end
 
     local dispatchInfo = GetDispatchData()
@@ -73,13 +72,87 @@ exports('createDispatch', function(data)
             color = data.blipColor or 1, -- Default: Red
             scale = data.blipScale or 1.0,
             time = data.blipTime or (data.timeout or 15000), -- Match timeout or default
+            flash = data.blipFlash or false,
             label = data.title or "Dispatch"
         }
     end
 
-    print(('DEBUG: Triggering Server Event %s:server:createDispatch'):format(resourceName))
     TriggerServerEvent(('%s:server:createDispatch'):format(resourceName), data)
 end)
+
+--- Generic, data-driven alert dispatcher.
+--- Builds a dispatch from a Config.Alerts template so individual alert types
+--- (see client/exports.lua and client/alerts.lua) don't duplicate boilerplate.
+--- @param name string          Key into Config.Alerts (also the default blip key)
+--- @param opts table|nil       Optional overrides: { vehicle = entity, camId, coords, priority, groups, extras = {..} }
+function TriggerAlert(name, opts)
+    opts = opts or {}
+    local def = (Config.Alerts and Config.Alerts[name]) or {}
+
+    local ped = PlayerPedId()
+    local coords = opts.coords or GetEntityCoords(ped)
+    local street = GetStreetAndZone(coords)
+
+    -- Gather optional context based on the template flags
+    local vehicleData
+    if def.vehicle or opts.vehicle then
+        local veh = opts.vehicle
+        if not veh or veh == 0 then
+            veh = IsPedInAnyVehicle(ped, false) and GetVehiclePedIsIn(ped, false) or nil
+        end
+        if veh and veh ~= 0 then vehicleData = GetVehicleData(veh) end
+    end
+
+    local callsign = LocalPlayer.state.callsign
+
+    -- Assemble UI extras
+    local extras = {
+        { icon = def.icon or 'circle-info', name = 'Situação', value = def.situation or def.title or name },
+        { icon = 'location-dot', name = 'Localização', value = street },
+    }
+    if def.gender then
+        extras[#extras + 1] = { icon = 'venus-mars', name = 'Gênero', value = GetPlayerGender() }
+    end
+    if def.weapon then
+        extras[#extras + 1] = { icon = 'gun', name = 'Arma', value = GetWeaponName() }
+    end
+    if vehicleData then
+        extras[#extras + 1] = { icon = 'car', name = 'Veículo', value = ('%s (%s)'):format(vehicleData.name, vehicleData.plate) }
+        extras[#extras + 1] = { icon = 'palette', name = 'Cor', value = vehicleData.color }
+    end
+    if def.unit then
+        extras[#extras + 1] = { icon = 'id-badge', name = 'Unidade', value = callsign or 'Desconhecido' }
+    end
+    if opts.extras then
+        for _, e in ipairs(opts.extras) do extras[#extras + 1] = e end
+    end
+
+    local blipConf = (Config.Blips and Config.Blips[def.blip or name]) or {}
+
+    exports[resourceName]:createDispatch({
+        title = def.title or opts.title or 'Dispatch',
+        titleIcon = def.icon or opts.icon,
+        code = def.code or opts.code,
+        tag = def.tag or (def.code),
+        groups = opts.groups or def.groups,
+        priority = opts.priority or def.priority or 2,
+        alertTime = opts.alertTime or def.alertTime,
+        x = coords.x,
+        y = coords.y,
+        coords = coords,
+        camId = opts.camId,
+        blipSprite = blipConf.sprite,
+        blipColor = blipConf.color,
+        blipScale = blipConf.scale,
+        blipFlash = blipConf.flash,
+        sound = blipConf.sound,
+        vehicle = vehicleData,
+        extras = extras,
+    })
+end
+
+-- Public generic export: exports['ps-dispatch']:DispatchAlert('storerobbery', { camId = 3 })
+exports('DispatchAlert', TriggerAlert)
 
 RegisterNetEvent(resourceName..':client:sendEmergencyMsg', function(message, type, anonymous)
     local ped = PlayerPedId()
@@ -95,7 +168,7 @@ RegisterNetEvent(resourceName..':client:sendEmergencyMsg', function(message, typ
         titleIcon = "phone",
         code = type,
         tag = type,
-        recipient = 'leo',
+        recipient = type == "311" and 'ems' or 'leo',
         priority = 3,
         x = coords.x,
         y = coords.y,

@@ -27,6 +27,10 @@ dependencies {
     "ox_lib",
 }
 
+-- Drop-in replacement for ps-dispatch: satisfies its dependency and
+-- routes exports['ps-dispatch']:* / the ps-dispatch:* events to us.
+provide "ps-dispatch"
+
 files {
     "html/**/*"
 }
