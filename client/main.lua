@@ -1,103 +1,66 @@
-local requests = {}
+-- mri_Qrequest (formerly g5-request)
+-- Core initialization and critical commands
 
-local acceptKeybind = lib.addKeybind({
-    name = 'g5_req_accept',
-    description = 'Aceitar request',
-    defaultKey = Config.AcceptKey or 'Y',
-    onReleased = function(self)
-        if #requests > 0 then
-            local id = requests[1].id
-            SendNUIMessage({action = 'flashAccept', id = id})
-            lib.callback('g5-request:answer', false, function(_) end, id, true)
-            table.remove(requests, 1)
-            SendNUIMessage({action = 'remove', id = id})
-        end
-    end
-})
+local resourceName = GetCurrentResourceName()
 
-local denyKeybind = lib.addKeybind({
-    name = 'g5_req_deny',
-    description = 'Recusar request',
-    defaultKey = Config.DenyKey or 'N',
-    onReleased = function(self)
-        if #requests > 0 then
-            local id = requests[1].id
-            SendNUIMessage({action = 'flashDeny', id = id})
-            lib.callback('g5-request:answer', false, function(_) end, id, false)
-            table.remove(requests, 1)
-            SendNUIMessage({action = 'remove', id = id})
-        end
-    end
-})
-
-local function removeRequest(id)
-    for i, r in ipairs(requests) do
-        if tostring(r.id) == tostring(id) then
-            table.remove(requests, i)
-            break
-        end
+-- Helper to wait for config load if necessary
+local function WaitForConfig()
+    while not Config or not Config.OpenSettingsKey do
+        Wait(100)
     end
 end
 
-RegisterNetEvent('g5-request:client:add', function(requestData)
-    table.insert(requests, requestData)
-    SendNUIMessage({
-        action = 'init',
-        acceptKey = acceptKeybind.currentKey or Config.AcceptKey,
-        denyKey = denyKeybind.currentKey or Config.DenyKey,
-        position = Config.Position or 'top-right',
-        themes = Themes
-    })
-    SendNUIMessage({action = 'add', request = requestData})
-end)
-
-RegisterNetEvent('g5-request:client:remove', function(id)
-    if not id then return end
-    removeRequest(id)
-    SendNUIMessage({ action = 'remove', id = id })
-end)
-
-RegisterNetEvent('g5-request:client:prolong', function(id, params)
-    if not id then return end
-    SendNUIMessage({
-        action = 'prolong',
-        id = id,
-        set = params and params.set or nil
-    })
-end)
-
-RegisterNUICallback('g5_request_answer', function(data, cb)
-    local id = data.id
-    local accepted = data.accepted
-    if not id then
-        cb({ok = false})
-        return
-    end
-
-    for i, r in ipairs(requests) do
-        if tostring(r.id) == tostring(id) then
-            table.remove(requests, i)
-            break
-        end
-    end
-
-    lib.callback('g5-request:answer', id, accepted, function(res)
-        cb({ok = true})
-    end)
-end)
-
-RegisterNUICallback('g5_nui_ready', function(_, cb)
-    print('g5-request NUI ready')
-    SendNUIMessage({
-        action = 'init',
-        acceptKey = acceptKeybind.currentKey or Config.AcceptKey,
-        denyKey = denyKeybind.currentKey or Config.DenyKey,
-        position = Config.Position or 'top-right',
-        themes = Themes
-    })
+RegisterNUICallback('nuiReady', function(_, cb)
+    print(string.format('[%s] NUI ready', resourceName))
+    TriggerEvent(resourceName..':client:nuiReady')
     SendNUIMessage({
         action = 'setVisible',
         data = true
     })
     cb({ok = true})
 end)
+
+CreateThread(function()
+    WaitForConfig()
+
+    RegisterCommand('ui_settings', function()
+        -- Toggle Settings
+        SetNuiFocus(true, true)
+        SendNUIMessage({ action = 'setVisible', data = true })
+        SendNUIMessage({ action = 'openSettings' })
+    end)
+    RegisterKeyMapping('ui_settings', 'Open Settings', 'keyboard', Config.OpenSettingsKey or 'F3')
+
+    RegisterCommand('ui_dispatch', function()
+        -- Toggle Dispatch Menu
+        SetNuiFocus(true, true)
+        SendNUIMessage({ action = 'setVisible', data = true })
+        SendNUIMessage({ action = 'openDispatch' })
+    end)
+    RegisterKeyMapping('ui_dispatch', 'Open Dispatch Menu', 'keyboard', Config.OpenDispatchMenu or 'F2')
+end)
+
+RegisterNetEvent(resourceName..':client:openMenu', function()
+    SetNuiFocus(true, true)
+    SendNUIMessage({ action = 'setVisible', data = true })
+    SendNUIMessage({ action = 'openDispatch' })
+end)
+
+RegisterNUICallback('close', function(_, cb)
+    SetNuiFocus(false, false)
+    cb({ok = true})
+end)
+
+RegisterCommand("callsign", function(source, args, rawCommand)
+    local callsign = args[1]
+    if callsign then
+        LocalPlayer.state.callsign = callsign
+        lib.notify({title = 'Callsign', description = 'Callsign updated to ' .. callsign, type = 'success'})
+        SendNUIMessage({
+            action = 'updateCallsign',
+            callsign = callsign
+        })
+    else
+        lib.notify({title = 'Callsign', description = 'Usage: /callsign [text]', type = 'error'})
+    end
+end, false)

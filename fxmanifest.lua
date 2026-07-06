@@ -7,10 +7,11 @@ description "Envia requests para outros jogadores."
 author "G5 Dev"
 version "1.0.0"
 
-ui_page "html/index.html"
+ui_page "web/build/index.html"
 
 shared_scripts {
     "@ox_lib/init.lua",
+    "shared/config.lua",
     "shared/**/*.lua"
 }
 
