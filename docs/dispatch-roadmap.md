@@ -4,7 +4,7 @@
 > mantendo a base de _requests_ player-to-player e a UI própria em React/shadcn.
 > A pasta `ps-dispatch/` no repo é apenas **referência** (não é um resource ativo).
 
-Última atualização: 2026-07-06
+Última atualização: 2026-07-06 (Rodada 2 concluída)
 
 ---
 
@@ -46,13 +46,21 @@ blip/alerta/menu e o fluxo attach→detach.
 
 ## Próximas rodadas (pendências priorizadas)
 
-### Rodada 2 — Acabamento de alertas (alto valor percebido)
-- ⬜ **Som nos blips**: tocar via `interact-sound` (`InteractSound_SV:PlayOnSource`) e/ou
-  `PlaySound` nativo. Hoje `sound`/`sound2` existem na config mas `client/blips.lua` não toca nada.
-- ⬜ **Radius blip** (`AddBlipForRadius`) + **offset aleatório** (`Config.MaxOffset`). Campos
-  `radius`/`offset`/`length` já existem na config, mas `blips.lua` só desenha o blip principal.
-- ⬜ **Fade/alpha** do blip ao longo de `length` minutos (hoje só remove no timeout).
-- ⬜ Garantir arquivos de som no resource (`sounds/`) — os `.ogg` do ps não foram portados.
+### Rodada 2 — Acabamento de alertas (alto valor percebido) ✅
+- ✅ **Som nos blips**: `client/blips.lua:playAlertSound` toca via `PlaySound` nativo
+  (sons frontend com `sound2`, ex. `Lose_1st`) e via `InteractSound_SV:PlayOnSource`
+  quando `interact-sound` está ativo; fallback nativo garante que nunca fica mudo.
+  Respeita `alertsMuted` (hook global p/ Rodada 4).
+- ✅ **Radius blip** (`AddBlipForRadius` quando `radius > 0`) + **offset aleatório**
+  (`Config.MaxOffset`, quando `offset = true`). Campos threaded via
+  `TriggerAlert → createDispatch → :client:add`.
+- ✅ **Fade/alpha** do radius blip de 128→0 ao longo de `length` minutos
+  (fallback para `time` ms quando `length` ausente).
+- ✅ Arquivos de som portados para `sounds/` (dispatch/panicbutton/robberysound `.ogg`)
+  e declarados no `fxmanifest.lua`. (Bônus: `files{}` corrigido p/ servir `web/build`.)
+
+> **Nota:** sons `.ogg` customizados dependem do `interact-sound` para tocar o arquivo
+> exato; sem ele, cai no cue nativo. Playback via NUI (self-contained) fica p/ Rodada 4.
 
 ### Rodada 3 — Contexto e supressão de alertas (robustez)
 - ⬜ **NoDispatchZones** (suprimir alertas em áreas, ex. Ammunation).

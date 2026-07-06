@@ -32,5 +32,7 @@ dependencies {
 provide "ps-dispatch"
 
 files {
-    "html/**/*"
+    "web/build/index.html",
+    "web/build/**/*",
+    "sounds/*.ogg"
 }

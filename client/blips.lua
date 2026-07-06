@@ -1,60 +1,110 @@
 -- client/blips.lua
+-- Draws dispatch blips: main blip, optional radius blip with alpha fade,
+-- optional position offset, and the alert sound.
 local blips = {}
+local radiusBlips = {}
+local resourceName = GetCurrentResourceName()
 
-RegisterNetEvent(GetCurrentResourceName() .. ':client:add', function(requestData)
+-- Flipped by the NUI 'toggleAlerts' callback (Rodada 4) to silence sounds.
+alertsMuted = alertsMuted or false
+
+local function randomOffset(base, max)
+    return base + math.random(-max, max)
+end
+
+--- Play the alert sound.
+--- Frontend GTA sounds (those carrying a soundset in `sound2`, e.g. 'Lose_1st')
+--- go through the native PlaySound. Custom .ogg cues (dispatch / panicbutton /
+--- robberysound) route through interact-sound when it is running; otherwise we
+--- fall back to a known-valid native cue so the alert is never fully silent.
+local function playAlertSound(b)
+    if alertsMuted then return end
+    local sound = b.sound
+    if not sound then return end
+
+    if b.sound2 then
+        PlaySound(-1, sound, b.sound2, 0, 0, 1)
+    elseif GetResourceState('interact-sound') == 'started' then
+        TriggerServerEvent('InteractSound_SV:PlayOnSource', sound, 0.25)
+    else
+        PlaySound(-1, 'Lose_1st', 'GTAO_FM_Events_Soundset', 0, 0, 1)
+    end
+end
+
+RegisterNetEvent(resourceName .. ':client:add', function(requestData)
     if not requestData or not requestData.blip then return end
+    local b = requestData.blip
 
     local x, y = requestData.x, requestData.y
     -- If no coords in root, try extras (legacy support)
-    if not x or not y then
-        if requestData.extras and requestData.extras.x and requestData.extras.y then
-           x = requestData.extras.x
-           y = requestData.extras.y
-        end
+    if (not x or not y) and requestData.extras and requestData.extras.x and requestData.extras.y then
+        x, y = requestData.extras.x, requestData.extras.y
     end
-
     if not x or not y then return end
+    local z = b.z or requestData.z or 0.0
 
     local id = requestData.id
 
-    -- Remove existing if update
-    if blips[id] then
-        RemoveBlip(blips[id])
+    -- Remove existing (update path)
+    if blips[id] then RemoveBlip(blips[id]); blips[id] = nil end
+    if radiusBlips[id] then RemoveBlip(radiusBlips[id]); radiusBlips[id] = nil end
+
+    -- Optional random offset to obscure the exact position
+    if b.offset then
+        local max = Config.MaxOffset or 120
+        x = randomOffset(x, max)
+        y = randomOffset(y, max)
     end
 
-    local blip = AddBlipForCoord(x, y, 0.0)
-    SetBlipSprite(blip, requestData.blip.sprite or 161)
-    SetBlipColour(blip, requestData.blip.color or 1)
-    SetBlipScale(blip, requestData.blip.scale or 1.0)
+    -- Main blip
+    local blip = AddBlipForCoord(x, y, z)
+    SetBlipSprite(blip, b.sprite or 161)
+    SetBlipColour(blip, b.color or 1)
+    SetBlipScale(blip, b.scale or 1.0)
     SetBlipAsShortRange(blip, true)
+    SetBlipHighDetail(blip, true)
+    if b.flash then SetBlipFlashes(blip, true) end
 
     BeginTextCommandSetBlipName("STRING")
-    AddTextComponentString(requestData.blip.label or "Dispatch")
+    AddTextComponentString(b.label or "Dispatch")
     EndTextCommandSetBlipName(blip)
-
-    -- Radius Blip (optional, if 'radius' provided)
-    -- For now just the main blip
-
-    -- Flashing
-    if requestData.blip.flash then
-        SetBlipFlashes(blip, true)
-    end
 
     blips[id] = blip
 
-    -- Auto removal
-    local time = requestData.blip.time or 15000
-    SetTimeout(time, function()
-        if blips[id] then
-            RemoveBlip(blips[id])
-            blips[id] = nil
+    -- Optional radius blip
+    local radius = tonumber(b.radius) or 0
+    local radiusBlip
+    if radius > 0 then
+        radiusBlip = AddBlipForRadius(x, y, z, radius + 0.0)
+        SetBlipColour(radiusBlip, b.color or 1)
+        SetBlipAlpha(radiusBlip, 128)
+        radiusBlips[id] = radiusBlip
+    end
+
+    playAlertSound(b)
+
+    -- Lifetime: prefer `length` minutes (ps-dispatch parity), else `time` ms.
+    local lifeMs = (b.length and b.length * 60000) or b.time or (Config.DefaultTimeout or 15000)
+
+    CreateThread(function()
+        if radiusBlip then
+            -- Fade the radius blip from 128 -> 0 across its lifetime.
+            local alpha = 128
+            local step = math.max(1, math.floor(lifeMs / alpha))
+            while alpha > 0 and DoesBlipExist(radiusBlip) do
+                Wait(step)
+                alpha = alpha - 1
+                SetBlipAlpha(radiusBlip, alpha)
+            end
+            if radiusBlips[id] then RemoveBlip(radiusBlips[id]); radiusBlips[id] = nil end
+        else
+            Wait(lifeMs)
         end
+        if blips[id] then RemoveBlip(blips[id]); blips[id] = nil end
     end)
 end)
 
-RegisterNetEvent(GetCurrentResourceName() .. ':client:remove', function(id)
-    if blips[id] then
-        RemoveBlip(blips[id])
-        blips[id] = nil
-    end
+RegisterNetEvent(resourceName .. ':client:remove', function(id)
+    if blips[id] then RemoveBlip(blips[id]); blips[id] = nil end
+    if radiusBlips[id] then RemoveBlip(radiusBlips[id]); radiusBlips[id] = nil end
 end)

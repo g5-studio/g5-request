@@ -64,6 +64,9 @@ exports('createDispatch', function(data)
         data.x = dispatchInfo.coords.x
         data.y = dispatchInfo.coords.y
     end
+    if not data.z then
+        data.z = (data.coords and data.coords.z) or dispatchInfo.coords.z
+    end
 
     -- Default Blip Settings
     if not data.blip then
@@ -73,7 +76,13 @@ exports('createDispatch', function(data)
             scale = data.blipScale or 1.0,
             time = data.blipTime or (data.timeout or 15000), -- Match timeout or default
             flash = data.blipFlash or false,
-            label = data.title or "Dispatch"
+            label = data.title or "Dispatch",
+            z = data.z,
+            radius = data.blipRadius or 0, -- AddBlipForRadius size (0 = none)
+            offset = data.blipOffset or false, -- Randomize position to hide exact spot
+            length = data.blipLength, -- Lifetime in minutes (ps-dispatch parity)
+            sound = data.sound, -- Alert sound cue
+            sound2 = data.sound2, -- GTA soundset for frontend sounds
         }
     end
 
@@ -139,13 +148,18 @@ function TriggerAlert(name, opts)
         alertTime = opts.alertTime or def.alertTime,
         x = coords.x,
         y = coords.y,
+        z = coords.z,
         coords = coords,
         camId = opts.camId,
         blipSprite = blipConf.sprite,
         blipColor = blipConf.color,
         blipScale = blipConf.scale,
         blipFlash = blipConf.flash,
+        blipRadius = blipConf.radius,
+        blipOffset = blipConf.offset,
+        blipLength = blipConf.length,
         sound = blipConf.sound,
+        sound2 = blipConf.sound2,
         vehicle = vehicleData,
         extras = extras,
     })
