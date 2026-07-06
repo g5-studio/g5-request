@@ -1,5 +1,3 @@
-import React from "react";
-// import "./App.css"; // Removed
 import RequestContainer from "./RequestContainer";
 import { ThemeProvider } from "../contexts/ThemeContext";
 

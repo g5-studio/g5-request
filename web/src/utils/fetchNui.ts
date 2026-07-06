@@ -29,10 +29,11 @@ export async function fetchNui<T = unknown>(
 
   // In browser (dev) avoid trying to call a non-existent `https://<resource>/...` endpoint.
   // If mockData provided, return it above; otherwise return an empty object to avoid network errors.
-  if (isEnvBrowser()) return ({} as T);
+  if (isEnvBrowser()) return {} as T;
 
-  const resourceName = (window as any).GetParentResourceName
-    ? (window as any).GetParentResourceName()
+  const resourceName = (window as unknown as { GetParentResourceName: () => string })
+    .GetParentResourceName
+    ? (window as unknown as { GetParentResourceName: () => string }).GetParentResourceName()
     : "nui-frame-app";
 
   const resp = await fetch(`https://${resourceName}/${eventName}`, options);
