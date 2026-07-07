@@ -2,8 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 export interface Theme {
-  card_bg?: string;
-  title_bg?: string;
+  // Cores funcionais por tipo de chamado (o chrome usa tokens do ui-kit).
   accent?: string;
   progress_color?: string;
   tag_bg?: string;
@@ -32,36 +31,11 @@ export const useTheme = () => {
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [themeType, setThemeType] = useState<string>("default");
   const [themes, setThemes] = useState<Record<string, Theme | undefined>>({
-    default: {
-      card_bg: "rgba(18, 18, 20, 0.98)",
-      title_bg: "rgba(255, 255, 255, 0.02)",
-      accent: "#10b981",
-      progress_color: "#10b981",
-    },
-    ambulancia: {
-      card_bg: "rgba(18, 18, 20, 0.98)",
-      title_bg: "rgba(220, 38, 38, 0.1)",
-      accent: "#ef4444",
-      progress_color: "#ef4444",
-    },
-    police: {
-      card_bg: "rgba(18, 18, 20, 0.98)",
-      title_bg: "rgba(37, 99, 235, 0.1)",
-      accent: "#3b82f6",
-      progress_color: "#3b82f6",
-    },
-    bombeiro: {
-      card_bg: "rgba(18, 18, 20, 0.98)",
-      title_bg: "rgba(217, 119, 6, 0.1)",
-      accent: "#f59e0b",
-      progress_color: "#f59e0b",
-    },
-    recrutamento: {
-      card_bg: "rgba(18, 18, 20, 0.98)",
-      title_bg: "rgba(147, 51, 234, 0.1)",
-      accent: "#a855f7",
-      progress_color: "#a855f7",
-    },
+    default: { accent: "#10b981", progress_color: "#10b981" },
+    ambulancia: { accent: "#ef4444", progress_color: "#ef4444" },
+    police: { accent: "#3b82f6", progress_color: "#3b82f6" },
+    bombeiro: { accent: "#f59e0b", progress_color: "#f59e0b" },
+    recrutamento: { accent: "#a855f7", progress_color: "#a855f7" },
   });
 
   useEffect(() => {

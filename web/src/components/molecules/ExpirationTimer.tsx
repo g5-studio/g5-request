@@ -15,11 +15,7 @@ export const ExpirationTimer: React.FC<ExpirationTimerProps> = ({ startTime, exp
     const update = () => {
       const now = Date.now();
       const diff = target - now;
-      if (diff <= 0) {
-        setTimeLeft(0);
-      } else {
-        setTimeLeft(diff);
-      }
+      setTimeLeft(diff <= 0 ? 0 : diff);
     };
 
     update(); // Initial check
@@ -28,8 +24,8 @@ export const ExpirationTimer: React.FC<ExpirationTimerProps> = ({ startTime, exp
   }, [startTime, expiresIn]);
 
   if (!expiresIn) return null;
-  if (timeLeft <= 0) return <span className="text-red-500 font-bold">Expired</span>;
+  if (timeLeft <= 0) return <span className="text-destructive font-bold">Expired</span>;
 
   const seconds = Math.floor(timeLeft / 1000);
-  return <span className="text-yellow-500 font-mono">{seconds}s left</span>;
+  return <span className="text-amber-500 font-mono">{seconds}s left</span>;
 };

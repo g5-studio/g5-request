@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from "react";
-import { useTheme } from "../contexts/ThemeContext";
-import { Card, CardContent, CardFooter } from "./ui/card";
-import { RequestHeader } from "./molecules/RequestHeader";
-import { RequestExtras } from "./molecules/RequestExtras";
-import { ActionBtn } from "./molecules/RequestActions";
-import { VehicleInfo } from "./molecules/VehicleInfo";
-import { Icon } from "./atoms/Icon";
-import { noop } from "../utils/misc";
-import { RequestData } from "../types";
-import { useI18n } from "../i18n";
+import { MriCard, MriCardContent, MriCardFooter } from "@mriqbox/ui-kit";
+import { useTheme } from "../../contexts/ThemeContext";
+import { RequestHeader } from "../molecules/RequestHeader";
+import { RequestExtras } from "../molecules/RequestExtras";
+import { ActionBtn } from "../molecules/RequestActions";
+import { VehicleInfo } from "../molecules/VehicleInfo";
+import { RespondingUnits } from "../molecules/RespondingUnits";
+import { noop } from "../../utils/misc";
+import { RequestData } from "../../types";
+import { useI18n } from "../../i18n";
 
 type Props = {
   req: RequestData;
@@ -55,21 +55,29 @@ const RequestCard: React.FC<Props> = ({
   const { themes } = useTheme();
   const { t } = useI18n();
 
-  // Pega o tema para aplicar inline como fallback
+  // Mantém os callbacks mais recentes em refs para que o efeito de timer/animação
+  // NÃO reinicie a cada render do container (onExpire/onRemove são recriados a
+  // cada render). Sem isso, a barra de progresso reiniciava sempre que a lista
+  // mudava e os cards nunca expiravam de forma confiável.
+  const onExpireRef = useRef(onExpire);
+  const onRemoveRef = useRef(onRemove);
+  onExpireRef.current = onExpire;
+  onRemoveRef.current = onRemove;
+
+  // Cor funcional da barra de progresso (accent do tema ou override do servidor).
   const themeType = req.themeType || "default";
   const cardTheme = themes[themeType] || themes["default"];
   const progressColor = req.progressColor || cardTheme?.progress_color || cardTheme?.accent;
 
-  // Priority 1 = high priority (red accent); everything else uses the theme default.
+  // Prioridade 1 = alta (destaque vermelho); demais usam o accent do tema.
   const isHighPriority = Number(req.priority) === 1;
   const accentColor = isHighPriority ? "#ef4444" : progressColor;
 
   useEffect(() => {
-    // initialize styles
     const el = elRef.current;
     if (!el || shortMode) return;
 
-    // play sound once on mount (arrival)
+    // Toca o som uma vez ao chegar.
     try {
       if (req.sound && !playedRef.current) {
         playedRef.current = true;
@@ -85,7 +93,7 @@ const RequestCard: React.FC<Props> = ({
               await a.play();
               break;
             } catch (e) {
-              // continue to next candidate
+              // tenta o próximo candidato
             }
           }
         })();
@@ -94,7 +102,6 @@ const RequestCard: React.FC<Props> = ({
       // ignore
     }
 
-    // show animation
     requestAnimationFrame(() => el.classList.add("show"));
 
     startedAtRef.current = performance.now();
@@ -106,13 +113,12 @@ const RequestCard: React.FC<Props> = ({
       const pct = Math.max(0, Math.min(1, 1 - elapsed / durationRef.current));
       if (barRef.current) barRef.current.style.width = `${pct * 100}%`;
       if (elapsed >= durationRef.current) {
-        onExpire();
-        // remove animation
+        onExpireRef.current();
         if (el) {
           el.classList.remove("show");
           el.classList.add("hide");
         }
-        setTimeout(() => onRemove(), 320);
+        setTimeout(() => onRemoveRef.current(), 320);
         return;
       }
       rafRef.current = requestAnimationFrame(tick);
@@ -122,7 +128,6 @@ const RequestCard: React.FC<Props> = ({
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      // stop any playing audio when the card unmounts
       try {
         for (const a of audioRefs.current) {
           try {
@@ -132,7 +137,6 @@ const RequestCard: React.FC<Props> = ({
             } catch (e) {
               /* ignore */
             }
-            // disconnect source
             a.src = "";
           } catch (e) {
             /* ignore */
@@ -143,7 +147,8 @@ const RequestCard: React.FC<Props> = ({
       }
       audioRefs.current = [];
     };
-  }, [req, onExpire, onRemove, themes, shortMode]);
+    // Só reinicia quando o próprio request muda (ex.: prolong) ou o modo compacto.
+  }, [req, shortMode]);
 
   useEffect(() => {
     if (!elRef.current || shortMode) return;
@@ -163,18 +168,18 @@ const RequestCard: React.FC<Props> = ({
 
   if (shortMode) {
     return (
-      <Card
-        className={`request-card w-[260px] relative overflow-hidden transition-all duration-300 border bg-[#121214] shadow-lg rounded-md mb-1 ${
-          isHighPriority ? "border-red-500/60" : "border-white/10"
+      <MriCard
+        className={`request-card w-[260px] rounded-md mb-1 transition-all duration-300 ${
+          isHighPriority ? "border-destructive/60" : ""
         }`}
         ref={elRef}
         data-id={String(req.id)}
-        style={{ background: cardTheme?.title_bg }}
       >
-        {/* Progress Bar */}
-        <div className="absolute left-0 bottom-0 h-[2px] w-full bg-white/5 z-20">
+        {/* Barra de progresso (largura controlada por requestAnimationFrame — sem
+            transição CSS pra não atrasar em relação à remoção do card). */}
+        <div className="absolute left-0 bottom-0 h-[2px] w-full bg-muted z-20">
           <div
-            className="h-full w-full transition-all ease-linear"
+            className="h-full w-full"
             ref={barRef}
             style={{ backgroundColor: accentColor }}
           />
@@ -183,81 +188,52 @@ const RequestCard: React.FC<Props> = ({
         <div className="p-2">
           <RequestHeader req={req} />
         </div>
-      </Card>
+      </MriCard>
     );
   }
 
   return (
-    <Card
-      className={`request-card w-[360px] relative overflow-hidden transition-all duration-300 border bg-[#121214] shadow-2xl rounded-xl ${
-        isHighPriority ? "border-red-500/60" : "border-white/10"
+    <MriCard
+      className={`request-card w-[360px] transition-all duration-300 ${
+        isHighPriority ? "border-destructive/60" : ""
       }`}
       ref={elRef}
       data-id={String(req.id)}
-      style={{
-        background: cardTheme?.card_bg, // Allow override but default to dark
-      }}
     >
-      {/* Progress Bar - Ultra thin gradient */}
-      <div className="absolute left-0 top-0 h-[2px] w-full bg-white/5 z-20">
+      {/* Barra de progresso — topo (largura via requestAnimationFrame, sem
+          transição CSS pra ficar em sincronia com a saída do card). */}
+      <div className="absolute left-0 top-0 h-[2px] w-full bg-muted z-20">
         <div
-          className="h-full w-full transition-all ease-linear shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+          className="h-full w-full"
           ref={barRef}
           style={{ backgroundColor: accentColor }}
         />
       </div>
 
-      {/* Header Area */}
-      <div
-        className="flex items-center justify-between p-2 border-b border-white/5 bg-white/[0.02]"
-        style={{ backgroundColor: cardTheme?.title_bg }}
-      >
+      {/* Cabeçalho */}
+      <div className="flex items-center justify-between p-2 border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
-          {/* Title Group */}
-          <div className="flex flex-col">
-            <RequestHeader req={req} />
-          </div>
+          <RequestHeader req={req} />
         </div>
       </div>
 
-      <CardContent className="p-2">
-        {/* Render Extras as a grid of info items */}
+      <MriCardContent className="p-2">
         <div className="grid grid-cols-1 gap-1">
           <RequestExtras extras={req.extras} />
         </div>
 
-        {/* Vehicle Info */}
         <VehicleInfo vehicle={req.vehicle} />
 
-        {/* Responding Units */}
-        {req.units && req.units.length > 0 && (
-          <div className="mt-2 pt-2 border-t border-white/5">
-            <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1 flex items-center gap-1">
-              <Icon name="users" />
-              <span>{t("card.responding_units")}</span>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {req.units.map((u, i) => (
-                <div
-                  key={i}
-                  className="bg-white/10 px-1.5 py-0.5 rounded text-[10px] font-mono text-white/80 border border-white/5"
-                >
-                  {u.callsign}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
+        <RespondingUnits units={req.units} withLabel />
+      </MriCardContent>
 
-      <CardFooter className="pb-2">
+      <MriCardFooter className="pb-2">
         <div className="w-full flex place-content-around">
           <ActionBtn
             variant="accept"
             onClick={onAccept}
             shortcutKey={acceptKey}
             label={req.acceptText ?? t("action.accept")}
-            className="group pr-2"
           />
 
           {!req.hideDeny && (
@@ -266,12 +242,11 @@ const RequestCard: React.FC<Props> = ({
               onClick={noop}
               shortcutKey={denyKey}
               label={req.denyText ?? t("action.refuse")}
-              className="group pr-2"
             />
           )}
         </div>
-      </CardFooter>
-    </Card>
+      </MriCardFooter>
+    </MriCard>
   );
 };
 

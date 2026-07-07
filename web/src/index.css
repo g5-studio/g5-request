@@ -2,105 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 240 5% 6%;
-    /* Deep dark background #0f0f11 */
-    --foreground: 0 0% 98%;
-    --card: 240 4% 10%;
-    /* Slightly lighter card #18181b */
-    --card-foreground: 0 0% 98%;
-    --popover: 240 5% 6%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 153 100% 46%;
-    /* Vibrant Mint Green #00eb9c matching the image 'Quick Actions' button */
-    --primary-foreground: 240 5% 6%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 12%;
-    /* Subtle border */
-    --input: 240 3.7% 15.9%;
-    --ring: 153 100% 46%;
-    --radius: 0.75rem;
-    /* Larger border-radius as seen in the image */
-  }
-}
-
+/* Os tokens de cor/tema vêm do próprio @mriqbox/ui-kit (dist/style.css). O tema
+   escuro é ativado pela classe `dark` na <html> (convenção do kit: :root = claro,
+   .dark = escuro). Aqui só cuidamos da transparência da NUI e do layout/motion. */
 @layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply text-foreground;
+    @apply text-foreground antialiased;
     background-color: transparent !important;
-    /* Ensure transparency for FiveM NUI */
+    /* Transparente para a NUI do FiveM deixar o jogo aparecer atrás. */
   }
 }
 
-/* Original legacy vars kept for backward compatibility if needed, but overridden by Tailwind classes when used */
-:root {
-  --card-bg: #0f2a2f;
-  --title-bg: #0b1a1b;
-  --tag-bg: #1abc9c;
-  --tag-fg: #0b1a1b;
-  --code-bg: #2d9cff;
-  --code-fg: #0b1a1b;
-  --text: #e6eef0;
-  /* --muted: #9fb1b4;  Collision with shadcn */
-  --progress-bg: rgba(255, 255, 255, 0.06);
-  --progress-color: #2d9cff;
-  --card-width: 380px;
-  --card-gap: 10px;
-  --bg-image: none;
-  --bg-size: cover;
-  --bg-position: center;
-}
+/* --- Layout / motion do overlay (não é "aparência", o kit não cobre) --- */
 
 #g5-request-root {
   pointer-events: none;
 }
 
-/* full-screen background image for testing transparency only present if var is set (usually dev) */
+/* Fundo de teste só em dev, quando --bg-image estiver setada. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: var(--bg-image);
-  background-size: var(--bg-size);
-  background-position: var(--bg-position);
+  background-image: var(--bg-image, none);
+  background-size: var(--bg-size, cover);
+  background-position: var(--bg-position, center);
   background-repeat: no-repeat;
   pointer-events: none;
   z-index: -1;
-  opacity: 1;
 }
 
-/* allow the dev panel to be interactive even though the root disables pointer events */
+/* O painel de dev precisa ser clicável mesmo com o root sem pointer-events. */
 .dev-panel {
   pointer-events: auto;
 }
 
+/* Stack de toasts (cards de request). */
 #container {
   position: fixed;
   top: 30px;
-  width: var(--card-width);
   z-index: 99999;
   display: flex;
   flex-direction: column;
-  gap: var(--card-gap);
+  gap: 10px;
 }
 
+#container.pos-top-right {
+  right: 30px;
+  left: auto;
+}
+
+#container.pos-top-left {
+  left: 30px;
+  right: auto;
+}
+
+/* Animação de entrada/saída do card (slide lateral). */
 .request-card {
   pointer-events: auto;
-  /* background: var(--card-bg);  Removed to let ShadCN Card handle it, or we override it explicitly */
-  /* border-radius: 8px; */
-  /* box-shadow: 0 6px 18px rgba(0,0,0,0.6); */
   transform: translateX(110%);
   opacity: 1;
   transition:
@@ -118,103 +81,6 @@ body::before {
 .request-card.hide {
   transform: translateX(110%);
   opacity: 0;
-}
-
-/* .card-body { padding: 0 8px 8px 8px } */
-
-.request-progress {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 2px;
-  width: 100%;
-  background: var(--progress-bg);
-  z-index: 10;
-}
-
-.request-progress > .bar {
-  height: 100%;
-  width: 100%;
-  background: var(--progress-color);
-  transition: width 200ms linear;
-}
-
-/* .top-row { padding:8px; display:flex; align-items:center; gap:8px; margin-bottom:8px; background-color: var(--title-bg); } */
-.tag {
-  padding: 4px 8px;
-  border-radius: 2px;
-  background: var(--tag-bg);
-  color: var(--tag-fg);
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.code {
-  background: var(--code-bg);
-  padding: 4px 8px;
-  border-radius: 2px;
-  color: var(--code-fg);
-  font-weight: 700;
-  font-size: 12px;
-}
-
-/* .title { font-weight:700; font-size:16px; color:var(--text); flex:1 1 auto; display:flex; align-items:center; justify-content:space-between; gap:8px } */
-.title-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.title-icon {
-  flex: 0 0 auto;
-  margin-left: 8px;
-}
-
-.title-icon i {
-  vertical-align: middle;
-}
-
-.subtitle {
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-/* .card-footer { display:flex; justify-content:space-between; align-items:center } */
-.ghost {
-  padding: 4px 12px;
-  background: transparent;
-  border-radius: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--muted);
-}
-
-.mutedline.small {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.mutedline {
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 6px;
-}
-
-.pos-top-right {
-}
-
-.pos-top-left {
-}
-
-#container.pos-top-right {
-  right: 30px;
-  left: auto;
-}
-
-#container.pos-top-left {
-  left: 30px;
-  right: auto;
 }
 
 .pos-top-left .request-card {

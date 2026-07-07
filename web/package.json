@@ -13,11 +13,8 @@
         "format": "prettier --write \"**/*.{ts,tsx,css,md,cjs}\" \"!node_modules/**\" \"!dist/**\""
     },
     "dependencies": {
-        "@radix-ui/react-label": "^2.1.8",
-        "@radix-ui/react-slot": "^1.2.4",
-        "class-variance-authority": "^0.7.1",
+        "@mriqbox/ui-kit": "file:../../../mri/mri-ui-kit",
         "clsx": "^2.1.1",
-        "lucide-react": "^0.562.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "tailwind-merge": "^3.4.0",

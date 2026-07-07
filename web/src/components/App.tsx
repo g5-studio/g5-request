@@ -1,4 +1,4 @@
-import RequestContainer from "./RequestContainer";
+import RequestContainer from "./templates/RequestContainer";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { I18nProvider } from "../i18n";
 

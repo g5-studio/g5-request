@@ -1,5 +1,5 @@
 import React from "react";
-import { Badge } from "../ui/badge";
+import { MriBadge } from "@mriqbox/ui-kit";
 import { esc } from "../../utils/themeUtils";
 import { Icon } from "../atoms/Icon";
 
@@ -12,6 +12,9 @@ interface ExtraDetailed {
   name?: string;
   value: unknown;
 }
+
+const EXTRA_BADGE_CLASS =
+  "text-[10px] min-h-[20px] h-auto py-0.5 gap-1.5 font-normal whitespace-normal break-all text-left";
 
 export const RequestExtras: React.FC<RequestExtrasProps> = ({ extras }) => {
   if (!extras) return null;
@@ -31,15 +34,11 @@ export const RequestExtras: React.FC<RequestExtrasProps> = ({ extras }) => {
   ) => {
     if (value === null || value === undefined || value === "") return null;
     return (
-      <Badge
-        variant="secondary"
-        className="text-[10px] min-h-[20px] h-auto py-0.5 bg-white/5 hover:bg-white/10 text-muted-foreground gap-1.5 font-normal whitespace-normal break-all text-left h-fit"
-        key={idx}
-      >
+      <MriBadge variant="secondary" className={EXTRA_BADGE_CLASS} key={idx}>
         <Icon name={icon} />
-        <span className="font-semibold text-white/70 whitespace-nowrap">{esc(name || "")}:</span>
-        <span>{esc(String(value))}</span>
-      </Badge>
+        <span className="font-semibold text-foreground whitespace-nowrap">{esc(name || "")}:</span>
+        <span className="text-muted-foreground">{esc(String(value))}</span>
+      </MriBadge>
     );
   };
 
@@ -59,27 +58,16 @@ export const RequestExtras: React.FC<RequestExtrasProps> = ({ extras }) => {
     return (
       <div className="flex flex-wrap gap-2 mt-1">
         {Object.entries(extrasObj as Record<string, unknown>).map(([k, v], idx) => {
-          // If v is the detailed object structure {icon, name, value}
+          // Estrutura detalhada {icon, name, value}
           if (v && typeof v === "object" && (v as ExtraDetailed).value !== undefined) {
             const detailed = v as ExtraDetailed;
             return renderSimpleItem(detailed.icon || k, detailed.name || k, detailed.value, idx);
           }
 
-          // If v is simple value
           if (v === null || v === undefined || v === "") return null;
-          if (typeof v === "object") return null; // Skip unknown objects to avoid [object Object]
+          if (typeof v === "object") return null; // evita [object Object]
 
-          return (
-            <Badge
-              variant="secondary"
-              className="text-[10px] min-h-[20px] h-auto py-0.5 bg-white/5 hover:bg-white/10 text-muted-foreground gap-1.5 font-normal whitespace-normal break-all text-left h-fit"
-              key={idx}
-            >
-              <Icon name={k} />
-              <span className="font-semibold text-white/70 whitespace-nowrap">{esc(k)}:</span>
-              <span>{esc(String(v))}</span>
-            </Badge>
-          );
+          return renderSimpleItem(k, k, v, idx);
         })}
       </div>
     );

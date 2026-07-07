@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import RequestCard from "./RequestCard";
-import DevPanel from "./DevPanel";
-import { isEnvBrowser } from "../utils/misc";
-import { fetchNui } from "../utils/fetchNui";
-import DispatchMenu from "./DispatchMenu";
-import { RequestData } from "../types";
-import { useI18n } from "../i18n";
+import RequestCard from "../organisms/RequestCard";
+import DevPanel from "../DevPanel";
+import { isEnvBrowser } from "../../utils/misc";
+import { fetchNui } from "../../utils/fetchNui";
+import DispatchMenu from "../organisms/DispatchMenu";
+import { RequestData } from "../../types";
+import { useI18n } from "../../i18n";
 
 type RecordItem = {
     id: string;
@@ -169,6 +169,12 @@ const RequestContainer: React.FC = () => {
 
     const isVisible = requests.length > 0 || (showDispatch && (keepRequestsOpen || showDispatch));
 
+    // Ordena por tempo restante: quem expira mais cedo (menos tempo pra aceitar/
+    // recusar) fica no topo. O instante de expiração é fixo por card (momento em
+    // que entrou + timeout), então a ordem é estável — não reordena a cada frame.
+    const expiresAt = (r: RecordItem) => r.key + (r.data.timeout ?? 8000);
+    const sortedRequests = [...requests].sort((a, b) => expiresAt(a) - expiresAt(b));
+
     return (
         <div id="g5-request-root">
             {isEnvBrowser() && <DevPanel />}
@@ -177,14 +183,16 @@ const RequestContainer: React.FC = () => {
                 className={`${position === "top-left" ? "pos-top-left" : "pos-top-right"} ${isVisible ? "" : "hidden"
                     }`}
             >
-                {requests.map((r) => (
+                {sortedRequests.map((r) => (
                     <RequestCard
-                        key={r.key}
+                        key={r.id}
                         req={r.data}
                         flash={r.flash}
                         acceptKey={acceptKeyRef.current}
                         denyKey={denyKeyRef.current}
                         onExpire={() => {
+                            // Barra zerou: avisa o servidor e remove na hora, pra os
+                            // cards de baixo subirem imediatamente (sem buraco).
                             fetchNui("answer", { id: r.id, accepted: false }).catch(() => { });
                             removeRequest(r.id);
                         }}
