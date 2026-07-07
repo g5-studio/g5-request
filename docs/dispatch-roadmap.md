@@ -4,7 +4,7 @@
 > mantendo a base de _requests_ player-to-player e a UI própria em React/shadcn.
 > A pasta `ps-dispatch/` no repo é apenas **referência** (não é um resource ativo).
 
-Última atualização: 2026-07-06 (Rodadas 2 e 3 concluídas)
+Última atualização: 2026-07-07 (Rodadas 2, 3 e 4 concluídas)
 
 ---
 
@@ -76,11 +76,21 @@ blip/alerta/menu e o fluxo attach→detach.
 > **Nota:** `explosionEvent` (usado aqui) não entrega lista de testemunhas como o
 > `CEventExplosionHeard` da referência, então o witness check não se aplica a explosões.
 
-### Rodada 4 — UI / NUI (paridade de menu)
-- ⬜ Wiring do **detach** na UI React (botão "sair de en-route").
-- ⬜ Callbacks faltantes: `toggleAlerts` (parar de receber), `clearBlips`, `refreshAlerts`.
-- ⬜ Habilitar/desabilitar keybind dinamicamente durante alerta ativo.
-- ⬜ Coloração por prioridade no card (1 = vermelho / 2 = default) — validar no `RequestCard`.
+### Rodada 4 — UI / NUI (paridade de menu) ✅
+- ✅ **Detach** na UI: botão "En route" (sair de en-route) no `DispatchItem` quando
+  o callsign do jogador está entre `req.units` → `fetchNui('detachUnit')`.
+- ✅ Callbacks faltantes (client `request.lua` + toolbar no `DispatchMenu`):
+  - `toggleAlerts` — alterna `AlertsDisabled` (bloqueia cards+blips+som), com notify.
+  - `clearBlips` — dispara `:client:clearBlips` (novo handler em `blips.lua`).
+  - `refreshAlerts` — re-puxa `getCalls` e reinjeta via `:client:add`.
+- ✅ Keybind dinâmico: `UpdateKeybinds()` habilita accept/deny só com request ativo
+  (`:disable(not active)`), chamado em add/remove/answer + init desabilitado.
+- ✅ Coloração por prioridade no `RequestCard` (priority 1 = borda + progress vermelhos;
+  demais = tema default). Campo `priority` adicionado ao tipo `RequestData`.
+
+> **Build:** `web/build` regenerado via `npm run build` (tsc + vite OK).
+> **Nota:** `refreshAlerts` usa `getCalls` (lista completa do servidor, sem filtro de job);
+> se necessário, filtrar no server numa rodada futura.
 
 ### Rodada 5 — Localização (i18n)
 - ⬜ Sistema de locales (`lib.locale` / `ox:locale`) — hoje strings hardcoded em PT/EN misturado.

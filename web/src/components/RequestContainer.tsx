@@ -203,6 +203,10 @@ const RequestContainer: React.FC = () => {
                     if (denyKeyRef.current) flashDeny(item.id);
                     fetchNui("g5_request_answer", { id: item.id, accepted: false }).catch(() => { });
                 }}
+                onDetach={(item) => {
+                    fetchNui("detachUnit", { id: item.id }).catch(() => { });
+                }}
+                myCallsign={callsign}
                 isMuted={isMuted}
                 onToggleMute={setIsMuted}
                 shortMode={shortMode}

@@ -24,6 +24,8 @@ type Props = {
     onLocate: (req: RequestData) => void;
     onAccept: (item: HistoryItem) => void;
     onDeny: (item: HistoryItem) => void;
+    onDetach: (item: HistoryItem) => void;
+    myCallsign?: string;
     // Settings
     isMuted: boolean;
     onToggleMute: (val: boolean) => void;
@@ -43,8 +45,14 @@ const DispatchItem: React.FC<{
     onLocate: (req: RequestData) => void;
     onAccept: (item: HistoryItem) => void;
     onDeny: (item: HistoryItem) => void;
-}> = ({ item, onLocate, onAccept, onDeny }) => {
+    onDetach: (item: HistoryItem) => void;
+    myCallsign?: string;
+}> = ({ item, onLocate, onAccept, onDeny, onDetach, myCallsign }) => {
     const req = item.data;
+
+    // The local player is "en route" when their callsign is among the units.
+    const isAttached =
+        !!myCallsign && !!req.units?.some((u) => u.callsign === myCallsign);
 
     return (
         <div className="p-2 hover:bg-primary/5 transition-colors flex items-center justify-between group border-l-2 border-transparent hover:border-l-primary/90 border-b border-white/5 last:border-b-0">
@@ -96,13 +104,24 @@ const DispatchItem: React.FC<{
                         />
                     )}
 
-                <ActionBtn
-                    variant="accept"
-                    onClick={() => onAccept(item)}
-                    label={req.acceptText ?? "Accept"}
-                    className="h-8 px-3"
-                    title="Accept"
-                />
+                {isAttached ? (
+                    <ActionBtn
+                        variant="deny"
+                        onClick={() => onDetach(item)}
+                        icon="right-from-bracket"
+                        label="En route"
+                        className="h-8 px-3"
+                        title="Sair de en-route"
+                    />
+                ) : (
+                    <ActionBtn
+                        variant="accept"
+                        onClick={() => onAccept(item)}
+                        label={req.acceptText ?? "Accept"}
+                        className="h-8 px-3"
+                        title="Accept"
+                    />
+                )}
 
                 {!req.hideDeny && (
                     <ActionBtn
@@ -126,6 +145,8 @@ const DispatchMenu: React.FC<Props> = ({
     onLocate,
     onAccept,
     onDeny,
+    onDetach,
+    myCallsign,
     isMuted,
     onToggleMute,
     shortMode,
@@ -138,6 +159,13 @@ const DispatchMenu: React.FC<Props> = ({
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState<"history" | "settings">("history");
+    const [alertsEnabled, setAlertsEnabled] = useState(true);
+
+    const toggleAlerts = () => {
+        fetchNui<{ disabled?: boolean }>("toggleAlerts")
+            .then((res) => setAlertsEnabled(!(res?.disabled ?? !alertsEnabled)))
+            .catch(() => setAlertsEnabled((v) => !v));
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -207,12 +235,39 @@ const DispatchMenu: React.FC<Props> = ({
                             )}
 
                             {activeTab === "history" && (
-                                <button
-                                    onClick={onClear}
-                                    className="text-xs bg-red-500/10 text-red-500 px-3 py-1.5 rounded hover:bg-red-500/20 transition-colors border border-red-500/20"
-                                >
-                                    Clear All
-                                </button>
+                                <>
+                                    <button
+                                        onClick={() => fetchNui("refreshAlerts").catch(() => { })}
+                                        className="text-xs bg-white/5 text-muted-foreground px-3 py-1.5 rounded hover:bg-white/10 hover:text-white transition-colors border border-white/10 flex items-center gap-1.5"
+                                        title="Recarregar alertas ativos do servidor"
+                                    >
+                                        <Icon name="rotate" /> Refresh
+                                    </button>
+                                    <button
+                                        onClick={() => fetchNui("clearBlips").catch(() => { })}
+                                        className="text-xs bg-white/5 text-muted-foreground px-3 py-1.5 rounded hover:bg-white/10 hover:text-white transition-colors border border-white/10 flex items-center gap-1.5"
+                                        title="Limpar todos os blips do mapa"
+                                    >
+                                        <Icon name="map-location-dot" /> Clear Blips
+                                    </button>
+                                    <button
+                                        onClick={toggleAlerts}
+                                        className={`text-xs px-3 py-1.5 rounded transition-colors border flex items-center gap-1.5 ${alertsEnabled
+                                            ? "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white border-white/10"
+                                            : "bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20"
+                                            }`}
+                                        title="Ativar/desativar recebimento de alertas"
+                                    >
+                                        <Icon name={alertsEnabled ? "bell" : "bell-slash"} />
+                                        {alertsEnabled ? "Alerts On" : "Alerts Off"}
+                                    </button>
+                                    <button
+                                        onClick={onClear}
+                                        className="text-xs bg-red-500/10 text-red-500 px-3 py-1.5 rounded hover:bg-red-500/20 transition-colors border border-red-500/20"
+                                    >
+                                        Clear All
+                                    </button>
+                                </>
                             )}
 
                             <button
@@ -243,6 +298,8 @@ const DispatchMenu: React.FC<Props> = ({
                                         onLocate={onLocate}
                                         onAccept={onAccept}
                                         onDeny={onDeny}
+                                        onDetach={onDetach}
+                                        myCallsign={myCallsign}
                                     />
                                 ))}
                             </div>

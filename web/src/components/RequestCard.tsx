@@ -58,6 +58,10 @@ const RequestCard: React.FC<Props> = ({
   const cardTheme = themes[themeType] || themes["default"];
   const progressColor = req.progressColor || cardTheme?.progress_color || cardTheme?.accent;
 
+  // Priority 1 = high priority (red accent); everything else uses the theme default.
+  const isHighPriority = Number(req.priority) === 1;
+  const accentColor = isHighPriority ? "#ef4444" : progressColor;
+
   useEffect(() => {
     // initialize styles
     const el = elRef.current;
@@ -158,7 +162,9 @@ const RequestCard: React.FC<Props> = ({
   if (shortMode) {
     return (
       <Card
-        className="request-card w-[260px] relative overflow-hidden transition-all duration-300 border border-white/10 bg-[#121214] shadow-lg rounded-md mb-1"
+        className={`request-card w-[260px] relative overflow-hidden transition-all duration-300 border bg-[#121214] shadow-lg rounded-md mb-1 ${
+          isHighPriority ? "border-red-500/60" : "border-white/10"
+        }`}
         ref={elRef}
         data-id={String(req.id)}
         style={{ background: cardTheme?.title_bg }}
@@ -168,7 +174,7 @@ const RequestCard: React.FC<Props> = ({
           <div
             className="h-full w-full transition-all ease-linear"
             ref={barRef}
-            style={{ backgroundColor: progressColor }}
+            style={{ backgroundColor: accentColor }}
           />
         </div>
 
@@ -181,7 +187,9 @@ const RequestCard: React.FC<Props> = ({
 
   return (
     <Card
-      className="request-card w-[360px] relative overflow-hidden transition-all duration-300 border border-white/10 bg-[#121214] shadow-2xl rounded-xl"
+      className={`request-card w-[360px] relative overflow-hidden transition-all duration-300 border bg-[#121214] shadow-2xl rounded-xl ${
+        isHighPriority ? "border-red-500/60" : "border-white/10"
+      }`}
       ref={elRef}
       data-id={String(req.id)}
       style={{
@@ -193,7 +201,7 @@ const RequestCard: React.FC<Props> = ({
         <div
           className="h-full w-full transition-all ease-linear shadow-[0_0_10px_rgba(16,185,129,0.5)]"
           ref={barRef}
-          style={{ backgroundColor: progressColor }}
+          style={{ backgroundColor: accentColor }}
         />
       </div>
 

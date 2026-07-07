@@ -1,6 +1,7 @@
 export type RequestData = {
   id: string | number;
   timeout?: number;
+  priority?: number | null;
   themeType?: string | null;
   tagColor?: string | null;
   progressColor?: string | null;

@@ -32,6 +32,7 @@ local function playAlertSound(b)
 end
 
 RegisterNetEvent(resourceName .. ':client:add', function(requestData)
+    if AlertsDisabled then return end -- alerts toggled off via the menu
     if not requestData or not requestData.blip then return end
     local b = requestData.blip
 
@@ -107,4 +108,10 @@ end)
 RegisterNetEvent(resourceName .. ':client:remove', function(id)
     if blips[id] then RemoveBlip(blips[id]); blips[id] = nil end
     if radiusBlips[id] then RemoveBlip(radiusBlips[id]); radiusBlips[id] = nil end
+end)
+
+-- Wipe every active dispatch blip (NUI 'clearBlips' control).
+RegisterNetEvent(resourceName .. ':client:clearBlips', function()
+    for id, b in pairs(blips) do RemoveBlip(b); blips[id] = nil end
+    for id, b in pairs(radiusBlips) do RemoveBlip(b); radiusBlips[id] = nil end
 end)

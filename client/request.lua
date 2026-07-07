@@ -3,6 +3,9 @@ local resourceName = GetCurrentResourceName()
 local QBCore = exports['qb-core']:GetCoreObject()
 local requests = {}
 
+-- Global (read by blips.lua): when true, incoming alerts are ignored entirely.
+AlertsDisabled = AlertsDisabled or false
+
 local function GetCallsign()
     local playerData = QBCore.Functions.GetPlayerData()
     return LocalPlayer.state.callsign
@@ -84,9 +87,19 @@ local denyKeybind = lib.addKeybind({
             lib.callback(resourceName..':answer', false, function(_) end, id, false)
             table.remove(requests, 1)
             SendNUIMessage({action = 'remove', id = id})
+            UpdateKeybinds()
         end
     end
 })
+
+-- Enable the accept/deny keybinds only while there is an active request, so the
+-- keys are free for other uses when no dispatch is pending.
+function UpdateKeybinds()
+    local active = #requests > 0
+    acceptKeybind:disable(not active)
+    denyKeybind:disable(not active)
+end
+UpdateKeybinds()
 
 RegisterNetEvent(resourceName..':client:nuiReady', function()
     SendNUIMessage({
@@ -108,6 +121,8 @@ local function removeRequest(id)
 end
 
 RegisterNetEvent(resourceName..':client:add', function(requestData)
+    if AlertsDisabled then return end -- player toggled alerts off via the menu
+
     local found = false
     for i, r in ipairs(requests) do
         if tostring(r.id) == tostring(requestData.id) then
@@ -127,6 +142,7 @@ RegisterNetEvent(resourceName..':client:add', function(requestData)
             themes = Themes
         })
         SendNUIMessage({action = 'add', request = requestData})
+        UpdateKeybinds()
     else
          -- It's an update
          SendNUIMessage({action = 'update', request = requestData})
@@ -148,6 +164,7 @@ RegisterNetEvent(resourceName..':client:remove', function(id)
     if not id then return end
     removeRequest(id)
     SendNUIMessage({ action = 'remove', id = id })
+    UpdateKeybinds()
 end)
 
 RegisterNetEvent(resourceName..':client:prolong', function(id, params)
@@ -186,5 +203,37 @@ RegisterNUICallback('answer', function(data, cb)
         end, id, accepted)
     end
 
+    UpdateKeybinds()
     cb({ok = true})
+end)
+
+-- Rodada 4 — dispatch menu controls --------------------------------------
+
+-- Stop / resume receiving alerts entirely (blips + cards + sound).
+RegisterNUICallback('toggleAlerts', function(_, cb)
+    AlertsDisabled = not AlertsDisabled
+    alertsMuted = AlertsDisabled -- global from blips.lua: also silence sounds
+    lib.notify({
+        description = AlertsDisabled and 'Alertas desativados.' or 'Alertas reativados.',
+        type = AlertsDisabled and 'error' or 'success'
+    })
+    cb({ disabled = AlertsDisabled })
+end)
+
+-- Wipe all active dispatch blips from the map.
+RegisterNUICallback('clearBlips', function(_, cb)
+    TriggerEvent(resourceName..':client:clearBlips')
+    cb({ ok = true })
+end)
+
+-- Re-pull the active call list from the server and repopulate the UI.
+RegisterNUICallback('refreshAlerts', function(_, cb)
+    if AlertsDisabled then cb({ ok = false }) return end
+    lib.callback(resourceName..':callback:getCalls', false, function(calls)
+        if not calls then return end
+        for _, call in ipairs(calls) do
+            TriggerEvent(resourceName..':client:add', call)
+        end
+    end)
+    cb({ ok = true })
 end)
