@@ -92,12 +92,15 @@ const DispatchMenu: React.FC<Props> = ({
       className="w-full max-w-4xl h-[80vh] gap-0 p-0 flex flex-col overflow-hidden"
     >
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border p-4">
+      <div className="flex-shrink-0 border-b border-border p-4 space-y-3">
+        {/* Linha 1: título + abas + fechar */}
         <div className="flex justify-between items-center gap-4">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6 min-w-0">
+            <div className="flex items-center gap-3 shrink-0">
               <Icon name="list-alt" className="text-lg text-primary" />
-              <h2 className="text-xl font-bold tracking-wide text-foreground">{t("menu.title")}</h2>
+              <h2 className="text-xl font-bold tracking-wide text-foreground whitespace-nowrap">
+                {t("menu.title")}
+              </h2>
             </div>
 
             <MriSegmentedTabs
@@ -118,52 +121,52 @@ const DispatchMenu: React.FC<Props> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            {activeTab === "history" && (
-              <>
-                <MriSearchInput
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder={t("menu.search")}
-                  width="w-48"
-                  size="sm"
-                />
-                <MriButton
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => fetchNui("refreshAlerts").catch(() => {})}
-                  title={t("menu.refresh_title")}
-                >
-                  <Icon name="rotate" /> {t("menu.refresh")}
-                </MriButton>
-                <MriButton
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => fetchNui("clearBlips").catch(() => {})}
-                  title={t("menu.clear_blips_title")}
-                >
-                  <Icon name="map-location-dot" /> {t("menu.clear_blips")}
-                </MriButton>
-                <MriButton
-                  variant={alertsEnabled ? "secondary" : "destructive"}
-                  size="sm"
-                  onClick={toggleAlerts}
-                  title={t("menu.alerts_title")}
-                >
-                  <Icon name={alertsEnabled ? "bell" : "bell-slash"} />
-                  {alertsEnabled ? t("menu.alerts_on") : t("menu.alerts_off")}
-                </MriButton>
-                <MriButton variant="destructive" size="sm" onClick={onClear}>
-                  {t("menu.clear_all")}
-                </MriButton>
-              </>
-            )}
+          <MriButton variant="ghost" size="icon" className="shrink-0" onClick={handleClose}>
+            <Icon name="times" className="text-lg" />
+          </MriButton>
+        </div>
 
-            <MriButton variant="ghost" size="icon" onClick={handleClose}>
-              <Icon name="times" className="text-lg" />
+        {/* Linha 2: busca + ações (só no histórico) */}
+        {activeTab === "history" && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <MriSearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder={t("menu.search")}
+              width="w-48"
+              size="sm"
+            />
+            <div className="flex-1" />
+            <MriButton
+              variant="secondary"
+              size="sm"
+              onClick={() => fetchNui("refreshAlerts").catch(() => {})}
+              title={t("menu.refresh_title")}
+            >
+              <Icon name="rotate" /> {t("menu.refresh")}
+            </MriButton>
+            <MriButton
+              variant="secondary"
+              size="sm"
+              onClick={() => fetchNui("clearBlips").catch(() => {})}
+              title={t("menu.clear_blips_title")}
+            >
+              <Icon name="map-location-dot" /> {t("menu.clear_blips")}
+            </MriButton>
+            <MriButton
+              variant={alertsEnabled ? "secondary" : "destructive"}
+              size="sm"
+              onClick={toggleAlerts}
+              title={t("menu.alerts_title")}
+            >
+              <Icon name={alertsEnabled ? "bell" : "bell-slash"} />
+              {alertsEnabled ? t("menu.alerts_on") : t("menu.alerts_off")}
+            </MriButton>
+            <MriButton variant="destructive" size="sm" onClick={onClear}>
+              {t("menu.clear_all")}
             </MriButton>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Body */}

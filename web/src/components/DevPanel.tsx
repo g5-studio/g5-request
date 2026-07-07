@@ -71,6 +71,72 @@ const DevPanel: React.FC = () => {
     setId((prev) => prev + count);
   }
 
+  function fireComplete() {
+    const dispatches = [
+      {
+        title: "Assalto a Mão Armada",
+        code: "10-31",
+        tagText: "PRIORIDADE ALTA",
+        titleIcon: "gun",
+        priority: 1,
+        themeType: "police",
+        timeout: 30000,
+        acceptText: "Atender",
+        denyText: "Ignorar",
+        extras: [
+          { icon: "location-dot", name: "Local", value: "Banco Fleeca, Legion Square" },
+          { icon: "user", name: "Vítima", value: "Michael De Santa" },
+          { icon: "circle-info", name: "Detalhes", value: "2 suspeitos armados, fugindo a pé" },
+        ],
+        vehicle: { plate: "GTA·0517", model: "Bravado Banshee", color: "Preto Fosco", class: "Esportivo" },
+        units: [{ callsign: "LSPD-12" }, { callsign: "LSPD-08" }, { callsign: "AIR-1" }],
+      },
+      {
+        title: "Acidente de Trânsito com Vítimas",
+        code: "QTI",
+        tagText: "SAMU",
+        titleIcon: "truck-medical",
+        priority: 2,
+        themeType: "ambulancia",
+        timeout: 30000,
+        acceptText: "Responder",
+        denyText: "Recusar",
+        extras: [
+          { icon: "location-dot", name: "Local", value: "Rod. Del Perro, altura do pier" },
+          { icon: "user-injured", name: "Vítimas", value: "3 feridos, 1 grave" },
+        ],
+        vehicle: { plate: "AMB·2043", model: "Ambulance", color: "Branco", class: "Emergência" },
+        units: [{ callsign: "SAMU-04" }, { callsign: "SAMU-07" }],
+      },
+      {
+        title: "Incêndio Estrutural",
+        code: "10-70",
+        tagText: "BOMBEIROS",
+        titleIcon: "fire",
+        priority: 1,
+        themeType: "bombeiro",
+        timeout: 30000,
+        hideDeny: true,
+        acceptText: "A caminho",
+        extras: [
+          { icon: "location-dot", name: "Local", value: "Edifício comercial, Vinewood Blvd" },
+          { icon: "triangle-exclamation", name: "Risco", value: "Possível colapso, gás desligado" },
+          { icon: "phone", name: "Solicitante", value: "Trevor Philips" },
+        ],
+        units: [
+          { callsign: "CB-01" },
+          { callsign: "CB-03" },
+          { callsign: "CB-05" },
+          { callsign: "CB-09" },
+        ],
+      },
+    ];
+    dispatches.forEach((d, i) => {
+      sendMessage({ action: "add", request: { id: id + i, ...d } });
+    });
+    setId((prev) => prev + dispatches.length);
+  }
+
   function removeRequest() {
     sendMessage({ action: "remove", id: id - 1 });
   }
@@ -230,6 +296,9 @@ const DevPanel: React.FC = () => {
               <i className="fa fa-bolt" /> Fire Many (5)
             </MriButton>
           </div>
+          <MriButton size="sm" variant="outline" className="w-full" onClick={fireComplete}>
+            <i className="fa fa-layer-group" /> Cenário Completo (3 chamados)
+          </MriButton>
           <div className="grid grid-cols-3 gap-2">
             <MriButton size="sm" variant="default" onClick={flashAccept}>
               ACEITAR

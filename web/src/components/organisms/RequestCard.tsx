@@ -75,7 +75,7 @@ const RequestCard: React.FC<Props> = ({
 
   useEffect(() => {
     const el = elRef.current;
-    if (!el || shortMode) return;
+    if (!el) return;
 
     // Toca o som uma vez ao chegar.
     try {
@@ -151,7 +151,7 @@ const RequestCard: React.FC<Props> = ({
   }, [req, shortMode]);
 
   useEffect(() => {
-    if (!elRef.current || shortMode) return;
+    if (!elRef.current) return;
     const el = elRef.current;
     if (flash === "accept") {
       el.style.boxShadow = "0 0 12px rgba(60,200,120,0.8)";
