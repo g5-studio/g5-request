@@ -1,13 +1,12 @@
 -- client/request.lua
 local resourceName = GetCurrentResourceName()
-local QBCore = exports['qb-core']:GetCoreObject()
 local requests = {}
 
 -- Global (read by blips.lua): when true, incoming alerts are ignored entirely.
 AlertsDisabled = AlertsDisabled or false
 
 local function GetCallsign()
-    local playerData = QBCore.Functions.GetPlayerData()
+    local playerData = Framework.PlayerData()
     return LocalPlayer.state.callsign
         or (playerData and playerData.metadata and playerData.metadata.callsign)
         or "UNIT"

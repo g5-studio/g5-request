@@ -173,6 +173,9 @@ end
 exports('DispatchAlert', TriggerAlert)
 
 RegisterNetEvent(resourceName..':client:sendEmergencyMsg', function(message, type, anonymous)
+    -- Gate the call: non-empty message, not handcuffed, and (if required) a phone.
+    if not IsCallAllowed(message) then return end
+
     local ped = PlayerPedId()
     local coords = GetEntityCoords(ped)
     local street = GetStreetAndZone(coords)

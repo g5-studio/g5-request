@@ -4,7 +4,7 @@
 > mantendo a base de _requests_ player-to-player e a UI própria em React/shadcn.
 > A pasta `ps-dispatch/` no repo é apenas **referência** (não é um resource ativo).
 
-Última atualização: 2026-07-07 (Rodadas 2, 3, 4 e 5 concluídas)
+Última atualização: 2026-07-07 (Rodadas 2, 3, 4, 5 e 6 concluídas)
 
 ---
 
@@ -107,13 +107,25 @@ blip/alerta/menu e o fluxo attach→detach.
 > ainda é hardcoded — os textos **dinâmicos** (títulos/tags/campos vindos do Lua) já são i18n.
 > Comandos de teste em `server/main.lua` e descrições de keybind não foram localizados (dev-only).
 
-### Rodada 6 — Integração / gating (fechamento drop-in)
-- ⬜ **Phone gating** de fato: `Config.PhoneRequired`/`Config.PhoneItems` existem no ps mas
-  não estão definidos aqui; `utils.lua` já referencia `HasPhone`/`IsCallAllowed`.
-- ⬜ **Handcuff check** ao abrir chamada (`ishandcuffed`) — `GetIsHandcuffed` já existe em `utils.lua`.
-- 🟡 **ESX**: `GetPlayersWithJob` tem branch ESX, mas `OnDutyOnly` só é respeitado no QBCore;
-  além disso o client tem dependência dura de `qb-core` (quebra em servidores ESX-only).
-- ⬜ Preencher/validar `weaponTable` (`GetWeaponName`) — hoje truncado (~5 armas).
+### Rodada 6 — Integração / gating (fechamento drop-in) ✅
+- ✅ **Phone gating** de fato: `Config.PhoneRequired`/`Config.PhoneItems` definidos em
+  `shared/config.lua`; `IsCallAllowed()` agora é chamado no handler
+  `:client:sendEmergencyMsg` (`client/dispatch.lua`), bloqueando o 911/311 sem telefone.
+- ✅ **Handcuff check** no fluxo de chamada: `IsCallAllowed()` (já com `GetIsHandcuffed()`)
+  passou a ser efetivamente invocado — algemado não envia 911/311.
+- ✅ **ESX / fim da dependência dura de `qb-core`**: novo `client/framework.lua` — bridge
+  `Framework` **lazy** que detecta `qb-core`/`es_extended` via `GetResourceState` e resolve
+  o core só em runtime. `utils.lua`, `request.lua` e `alerts.lua` não fazem mais
+  `exports['qb-core']:GetCoreObject()` no topo (não quebra mais em servidor ESX-only).
+  `OnDutyOnly` agora respeitado no branch ESX de `GetPlayersWithJob` (`server/dispatch.lua`)
+  quando `job.onDuty` está presente.
+- ✅ `weaponTable` completa (44 entradas, classes 1–5 + Taser) portada da referência
+  em `client/utils.lua`.
+
+> **Notas de portabilidade ESX:** handcuff cai em `GetPedConfigFlag(ped, 292)` (fail-safe),
+> duty é fail-open quando nenhum recurso popula `job.onDuty`, e itens usam `ox_inventory`
+> quando presente (senão fail-open no ESX sem inventory síncrono). Gênero: `charinfo.gender`
+> (QB) ou `sex` `m/f|0/1` (ESX).
 
 ---
 

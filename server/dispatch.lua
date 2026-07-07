@@ -37,7 +37,15 @@ local function GetPlayersWithJob(jobs)
             if xPlayer then
                 for _, job in ipairs(jobs) do
                      if xPlayer.job.name == job then
-                         table.insert(players, tonumber(src))
+                         -- ESX has no built-in duty flag; honor job.onDuty when a
+                         -- duty resource populates it, otherwise treat as on duty.
+                         if Config.OnDutyOnly and xPlayer.job.onDuty ~= nil then
+                             if xPlayer.job.onDuty then
+                                 table.insert(players, tonumber(src))
+                             end
+                         else
+                             table.insert(players, tonumber(src))
+                         end
                          break
                      end
                 end

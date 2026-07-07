@@ -23,6 +23,10 @@ Config.AlertTime = 5
 Config.MaxCallList = 25
 Config.OnDutyOnly = true
 
+-- Gating for the 911/311 flow (Rodada 6)
+Config.PhoneRequired = true         -- require a phone item to send a 911/311 message
+Config.PhoneItems = { 'phone' }     -- any of these items satisfies PhoneRequired
+
 -- Job Configuration
 Config.JobMapping = {
     ['leo'] = {'police', 'sheriff', 'trooper'},

@@ -4,7 +4,7 @@
 -- built by hand here.
 
 local timer = {}
-local QBCore = exports['qb-core']:GetCoreObject()
+-- Framework access via the lazy bridge (client/framework.lua) — no hard core dep.
 local resourceName = GetCurrentResourceName()
 
 -- Cooldown gate to prevent spam (per alert type, keyed by Config.DefaultAlerts)
@@ -176,7 +176,8 @@ AddEventHandler('gameEventTriggered', function(event, data)
     local victim = data[1]
     if victim ~= PlayerPedId() or not IsEntityDead(PlayerPedId()) then return end
 
-    local PlayerData = QBCore.Functions.GetPlayerData()
+    local PlayerData = Framework.PlayerData()
+    if not PlayerData then return end
     local job = PlayerData.job and PlayerData.job.name
 
     local isLeo = false
