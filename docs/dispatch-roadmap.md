@@ -4,7 +4,7 @@
 > mantendo a base de _requests_ player-to-player e a UI própria em React/shadcn.
 > A pasta `ps-dispatch/` no repo é apenas **referência** (não é um resource ativo).
 
-Última atualização: 2026-07-06 (Rodada 2 concluída)
+Última atualização: 2026-07-06 (Rodadas 2 e 3 concluídas)
 
 ---
 
@@ -62,11 +62,19 @@ blip/alerta/menu e o fluxo attach→detach.
 > **Nota:** sons `.ogg` customizados dependem do `interact-sound` para tocar o arquivo
 > exato; sem ele, cai no cue nativo. Playback via NUI (self-contained) fica p/ Rodada 4.
 
-### Rodada 3 — Contexto e supressão de alertas (robustez)
-- ⬜ **NoDispatchZones** (suprimir alertas em áreas, ex. Ammunation).
-- ⬜ **HuntingZones** + reroute de tiro para "hunting" + `Config.EnableHuntingBlip`.
-- ⬜ **Witness check** (`isPedAWitness`): só alertar se houver testemunha por perto.
-- ⬜ Portar `Config.Locations` (Hunting/NoDispatch) da referência.
+### Rodada 3 — Contexto e supressão de alertas (robustez) ✅
+- ✅ **NoDispatchZones** (box via `lib.zones.box`): gunshot suprimido dentro
+  (`client/alerts.lua` checa `inNoDispatchZone`). Ex.: Ammunation 1 e 2.
+- ✅ **HuntingZones** (sphere via `lib.zones.sphere`) + reroute de tiro para
+  `hunting` quando `inHuntingZone` + `Config.EnableHuntingBlip` (blip sprite 442).
+- ✅ **Witness check** (`IsPedAWitness`): shooting/melee só alertam se o ped estiver
+  na lista de testemunhas do evento shocking.
+- ✅ `Config.Locations` (HuntingZones/NoDispatchZones) portado da referência.
+  Zonas criadas em `client/zones.lua` (novo), expondo os globais
+  `inHuntingZone`/`inNoDispatchZone`.
+
+> **Nota:** `explosionEvent` (usado aqui) não entrega lista de testemunhas como o
+> `CEventExplosionHeard` da referência, então o witness check não se aplica a explosões.
 
 ### Rodada 4 — UI / NUI (paridade de menu)
 - ⬜ Wiring do **detach** na UI React (botão "sair de en-route").

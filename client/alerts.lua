@@ -30,6 +30,15 @@ local function IsWeaponWhitelisted(weapon)
     return false
 end
 
+-- Shocking-event handlers receive the list of peds that actually perceived the
+-- event as their first argument. Only alert when the acting ped was witnessed.
+local function IsPedAWitness(witnesses, ped)
+    for _, v in pairs(witnesses) do
+        if v == ped then return true end
+    end
+    return false
+end
+
 -- Manual panic button (10-78)
 local function Panic()
     local ped = PlayerPedId()
@@ -66,12 +75,20 @@ RegisterCommand("panic", Panic, false)
 RegisterCommand("10-78", Panic, false)
 
 -- Shooting
-AddEventHandler('CEventGunShot', function(_, ped)
+AddEventHandler('CEventGunShot', function(witnesses, ped)
     if ped ~= PlayerPedId() then return end
     if IsPedCurrentWeaponSilenced(ped) then return end
+    if inNoDispatchZone then return end -- e.g. inside Ammunation
     if IsWeaponWhitelisted(GetSelectedPedWeapon(ped)) then return end
 
     WaitTimer('Shooting', function()
+        -- Reroute gunfire inside a hunting zone to a low-priority 'hunting' alert.
+        if inHuntingZone then
+            TriggerAlert('hunting')
+            return
+        end
+        -- Only alert if someone actually witnessed the shot.
+        if witnesses and not IsPedAWitness(witnesses, ped) then return end
         TriggerAlert('shooting')
     end)
 end)
@@ -132,10 +149,11 @@ CreateThread(function()
 end)
 
 -- Melee / Fight
-AddEventHandler('CEventShockingSeenMeleeAction', function(_, ped)
+AddEventHandler('CEventShockingSeenMeleeAction', function(witnesses, ped)
     if ped ~= PlayerPedId() then return end
 
     WaitTimer('Melee', function()
+        if witnesses and not IsPedAWitness(witnesses, ped) then return end
         TriggerAlert('fight')
     end)
 end)

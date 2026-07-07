@@ -38,6 +38,21 @@ Config.DefaultAlerts = {
 Config.MinOffset = 1
 Config.MaxOffset = 120
 
+-- Contextual zones (Rodada 3) --------------------------------------------
+-- HuntingZones: gunshots inside reroute to a 'hunting' alert (not 'shooting').
+-- NoDispatchZones: automatic alerts are suppressed inside (e.g. Ammunation).
+Config.EnableHuntingBlip = false
+
+Config.Locations = {
+    ['HuntingZones'] = {
+        { label = 'Hunting Zone', radius = 650.0, coords = vector3(-938.61, 4823.99, 313.92) },
+    },
+    ['NoDispatchZones'] = {
+        { label = 'Ammunation 1', coords = vector3(13.53, -1097.92, 29.8),   length = 14.0, width = 5.0, heading = 70,  minZ = 28.8,  maxZ = 32.8 },
+        { label = 'Ammunation 2', coords = vector3(821.96, -2163.09, 29.62), length = 14.0, width = 5.0, heading = 270, minZ = 28.62, maxZ = 32.62 },
+    },
+}
+
 -- Weapon Whitelist
 Config.WeaponWhitelist = {
     'WEAPON_GRENADE', 'WEAPON_BZGAS', 'WEAPON_MOLOTOV', 'WEAPON_STICKYBOMB',
