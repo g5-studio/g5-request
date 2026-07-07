@@ -227,20 +227,20 @@ local function translatePsDispatch(d)
     local alert = d.alert or {}
 
     local extras = {
-        { icon = stripFa(d.icon) or 'circle-info', name = 'Situação', value = d.message or 'Ocorrência' },
+        { icon = stripFa(d.icon) or 'circle-info', name = locale('field_situation'), value = d.message or locale('incident') },
     }
-    if d.street then extras[#extras + 1] = { icon = 'location-dot', name = 'Localização', value = d.street } end
-    if d.gender then extras[#extras + 1] = { icon = 'venus-mars', name = 'Gênero', value = d.gender } end
-    if d.weapon then extras[#extras + 1] = { icon = 'gun', name = 'Arma', value = d.weapon } end
-    if d.vehicle then extras[#extras + 1] = { icon = 'car', name = 'Veículo', value = d.plate and ('%s (%s)'):format(d.vehicle, d.plate) or d.vehicle } end
-    if d.color then extras[#extras + 1] = { icon = 'palette', name = 'Cor', value = d.color } end
-    if d.name then extras[#extras + 1] = { icon = 'user', name = 'Nome', value = d.name } end
-    if d.callsign then extras[#extras + 1] = { icon = 'id-badge', name = 'Callsign', value = d.callsign } end
-    if d.number then extras[#extras + 1] = { icon = 'phone', name = 'Número', value = d.number } end
-    if d.information then extras[#extras + 1] = { icon = 'comment', name = 'Mensagem', value = d.information } end
+    if d.street then extras[#extras + 1] = { icon = 'location-dot', name = locale('field_location'), value = d.street } end
+    if d.gender then extras[#extras + 1] = { icon = 'venus-mars', name = locale('field_gender'), value = d.gender } end
+    if d.weapon then extras[#extras + 1] = { icon = 'gun', name = locale('field_weapon'), value = d.weapon } end
+    if d.vehicle then extras[#extras + 1] = { icon = 'car', name = locale('field_vehicle'), value = d.plate and ('%s (%s)'):format(d.vehicle, d.plate) or d.vehicle } end
+    if d.color then extras[#extras + 1] = { icon = 'palette', name = locale('field_color'), value = d.color } end
+    if d.name then extras[#extras + 1] = { icon = 'user', name = locale('field_name'), value = d.name } end
+    if d.callsign then extras[#extras + 1] = { icon = 'id-badge', name = locale('field_callsign'), value = d.callsign } end
+    if d.number then extras[#extras + 1] = { icon = 'phone', name = locale('field_number'), value = d.number } end
+    if d.information then extras[#extras + 1] = { icon = 'comment', name = locale('field_message'), value = d.information } end
 
     return {
-        title = d.message or 'Ocorrência',
+        title = d.message or locale('incident'),
         titleIcon = stripFa(d.icon),
         code = d.code,
         tag = d.codeName and string.upper(tostring(d.codeName)) or nil,

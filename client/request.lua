@@ -35,7 +35,7 @@ local function AcceptRequest(request)
     -- Set Waypoint
     if request.coords or (request.x and request.y) then
         SetNewWaypoint(request.x or request.coords.x, request.y or request.coords.y)
-        lib.notify({description = 'Dispatch aceito! GPS Definido.', type = 'success'})
+        lib.notify({description = locale('accepted_gps'), type = 'success'})
     end
 
     -- Optional: Flash UI to indicate interaction
@@ -214,7 +214,7 @@ RegisterNUICallback('toggleAlerts', function(_, cb)
     AlertsDisabled = not AlertsDisabled
     alertsMuted = AlertsDisabled -- global from blips.lua: also silence sounds
     lib.notify({
-        description = AlertsDisabled and 'Alertas desativados.' or 'Alertas reativados.',
+        description = AlertsDisabled and locale('alerts_disabled') or locale('alerts_enabled'),
         type = AlertsDisabled and 'error' or 'success'
     })
     cb({ disabled = AlertsDisabled })

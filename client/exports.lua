@@ -81,17 +81,17 @@ local function CustomAlert(data)
     local alert = data.alert or {}
 
     local extras = {
-        { icon = stripFa(data.icon) or 'circle-info', name = 'Situação', value = data.message or 'Ocorrência' },
-        { icon = 'location-dot', name = 'Localização', value = data.street or GetStreetAndZone(coords) },
+        { icon = stripFa(data.icon) or 'circle-info', name = locale('field_situation'), value = data.message or locale('incident') },
+        { icon = 'location-dot', name = locale('field_location'), value = data.street or GetStreetAndZone(coords) },
     }
-    if data.gender then extras[#extras + 1] = { icon = 'venus-mars', name = 'Gênero', value = (type(data.gender) == 'string' and data.gender) or GetPlayerGender() } end
-    if data.name then extras[#extras + 1] = { icon = 'user', name = 'Nome', value = data.name } end
-    if data.callsign then extras[#extras + 1] = { icon = 'id-badge', name = 'Callsign', value = data.callsign } end
-    if data.model then extras[#extras + 1] = { icon = 'car', name = 'Veículo', value = data.plate and ('%s (%s)'):format(data.model, data.plate) or data.model } end
-    if data.firstColor then extras[#extras + 1] = { icon = 'palette', name = 'Cor', value = data.firstColor } end
+    if data.gender then extras[#extras + 1] = { icon = 'venus-mars', name = locale('field_gender'), value = (type(data.gender) == 'string' and data.gender) or GetPlayerGender() } end
+    if data.name then extras[#extras + 1] = { icon = 'user', name = locale('field_name'), value = data.name } end
+    if data.callsign then extras[#extras + 1] = { icon = 'id-badge', name = locale('field_callsign'), value = data.callsign } end
+    if data.model then extras[#extras + 1] = { icon = 'car', name = locale('field_vehicle'), value = data.plate and ('%s (%s)'):format(data.model, data.plate) or data.model } end
+    if data.firstColor then extras[#extras + 1] = { icon = 'palette', name = locale('field_color'), value = data.firstColor } end
 
     exports[resourceName]:createDispatch({
-        title = data.message or 'Ocorrência',
+        title = data.message or locale('incident'),
         titleIcon = stripFa(data.icon),
         code = data.code or '10-80',
         tag = data.dispatchCode and string.upper(tostring(data.dispatchCode)) or nil,

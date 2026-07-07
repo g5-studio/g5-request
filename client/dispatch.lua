@@ -114,23 +114,27 @@ function TriggerAlert(name, opts)
 
     local callsign = LocalPlayer.state.callsign
 
+    -- Localized display strings (Rodada 5)
+    local title = opts.title or locale('alert_' .. name)
+    local tag = def.tag and locale('tag_' .. def.tag) or def.code
+
     -- Assemble UI extras
     local extras = {
-        { icon = def.icon or 'circle-info', name = 'Situação', value = def.situation or def.title or name },
-        { icon = 'location-dot', name = 'Localização', value = street },
+        { icon = def.icon or 'circle-info', name = locale('field_situation'), value = title },
+        { icon = 'location-dot', name = locale('field_location'), value = street },
     }
     if def.gender then
-        extras[#extras + 1] = { icon = 'venus-mars', name = 'Gênero', value = GetPlayerGender() }
+        extras[#extras + 1] = { icon = 'venus-mars', name = locale('field_gender'), value = GetPlayerGender() }
     end
     if def.weapon then
-        extras[#extras + 1] = { icon = 'gun', name = 'Arma', value = GetWeaponName() }
+        extras[#extras + 1] = { icon = 'gun', name = locale('field_weapon'), value = GetWeaponName() }
     end
     if vehicleData then
-        extras[#extras + 1] = { icon = 'car', name = 'Veículo', value = ('%s (%s)'):format(vehicleData.name, vehicleData.plate) }
-        extras[#extras + 1] = { icon = 'palette', name = 'Cor', value = vehicleData.color }
+        extras[#extras + 1] = { icon = 'car', name = locale('field_vehicle'), value = ('%s (%s)'):format(vehicleData.name, vehicleData.plate) }
+        extras[#extras + 1] = { icon = 'palette', name = locale('field_color'), value = vehicleData.color }
     end
     if def.unit then
-        extras[#extras + 1] = { icon = 'id-badge', name = 'Unidade', value = callsign or 'Desconhecido' }
+        extras[#extras + 1] = { icon = 'id-badge', name = locale('field_unit'), value = callsign or locale('unknown') }
     end
     if opts.extras then
         for _, e in ipairs(opts.extras) do extras[#extras + 1] = e end
@@ -139,10 +143,10 @@ function TriggerAlert(name, opts)
     local blipConf = (Config.Blips and Config.Blips[def.blip or name]) or {}
 
     exports[resourceName]:createDispatch({
-        title = def.title or opts.title or 'Dispatch',
+        title = title,
         titleIcon = def.icon or opts.icon,
         code = def.code or opts.code,
-        tag = def.tag or (def.code),
+        tag = tag,
         groups = opts.groups or def.groups,
         priority = opts.priority or def.priority or 2,
         alertTime = opts.alertTime or def.alertTime,
@@ -174,8 +178,8 @@ RegisterNetEvent(resourceName..':client:sendEmergencyMsg', function(message, typ
     local street = GetStreetAndZone(coords)
     local gender = GetPlayerGender()
 
-    local title = type == "911" and "911 Call" or "311 Call"
-    if anonymous then title = title .. " (Anonymous)" end
+    local title = type == "911" and locale('call_911') or locale('call_311')
+    if anonymous then title = title .. " (" .. locale('anonymous') .. ")" end
 
     exports[resourceName]:createDispatch({
         title = title,
@@ -190,13 +194,13 @@ RegisterNetEvent(resourceName..':client:sendEmergencyMsg', function(message, typ
         blipColor = type == "911" and 1 or 5,
         blipScale = 1.0,
         extras = {
-            { icon = "phone", name = "Service", value = type },
-            { icon = "user", name = "Caller", value = anonymous and "Anonymous" or (LocalPlayer.state.callsign or "Unknown") },
-            { icon = "venus-mars", name = "Gender", value = gender },
-            { icon = "location-dot", name = "Location", value = street },
-            { icon = "comment", name = "Message", value = message }
+            { icon = "phone", name = locale('field_service'), value = type },
+            { icon = "user", name = locale('field_caller'), value = anonymous and locale('anonymous') or (LocalPlayer.state.callsign or locale('unknown')) },
+            { icon = "venus-mars", name = locale('field_gender'), value = gender },
+            { icon = "location-dot", name = locale('field_location'), value = street },
+            { icon = "comment", name = locale('field_message'), value = message }
         }
     })
 
-    lib.notify({title = title, description = 'Mensagem enviada com sucesso.', type = 'success'})
+    lib.notify({title = title, description = locale('msg_sent'), type = 'success'})
 end)

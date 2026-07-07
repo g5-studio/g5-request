@@ -15,11 +15,10 @@ function GetPlayerHeading()
 end
 
 function GetPlayerGender()
-    local gender = "Male"
     if QBCore and QBCore.Functions.GetPlayerData().charinfo.gender == 1 then
-        gender = "Female"
+        return locale('gender_female')
     end
-    return gender
+    return locale('gender_male')
 end
 
 function GetIsHandcuffed()
@@ -115,7 +114,7 @@ function IsCallAllowed(message)
     if msgLength == 0 then return false end
     if GetIsHandcuffed() then return false end
     if Config.PhoneRequired and not HasPhone() then
-        if QBCore then QBCore.Functions.Notify('You need a communications device for this.', 'error', 5000) end
+        if QBCore then QBCore.Functions.Notify(locale('need_phone'), 'error', 5000) end
         return false
     end
     return true

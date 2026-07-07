@@ -55,12 +55,12 @@ RegisterCommand("callsign", function(source, args, rawCommand)
     local callsign = args[1]
     if callsign then
         LocalPlayer.state.callsign = callsign
-        lib.notify({title = 'Callsign', description = 'Callsign updated to ' .. callsign, type = 'success'})
+        lib.notify({title = 'Callsign', description = locale('callsign_updated', callsign), type = 'success'})
         SendNUIMessage({
             action = 'updateCallsign',
             callsign = callsign
         })
     else
-        lib.notify({title = 'Callsign', description = 'Usage: /callsign [text]', type = 'error'})
+        lib.notify({title = 'Callsign', description = locale('callsign_usage'), type = 'error'})
     end
 end, false)

@@ -48,7 +48,7 @@ local function Panic()
     PhoneAnimation()
 
     exports[resourceName]:createDispatch({
-        title = "Officer in Distress - 10-78",
+        title = locale('panic_title'),
         titleIcon = "skull",
         code = "10-78",
         tag = "PANIC",
@@ -62,13 +62,13 @@ local function Panic()
         blipFlash = true,
         sound = "panicbutton",
         extras = {
-            { icon = "skull", name = "Situação", value = "Oficial precisa de assistência imediata!" },
-            { icon = "location-dot", name = "Localização", value = street },
-            { icon = "id-badge", name = "Oficial", value = LocalPlayer.state.callsign or "Desconhecido" }
+            { icon = "skull", name = locale('field_situation'), value = locale('panic_situation') },
+            { icon = "location-dot", name = locale('field_location'), value = street },
+            { icon = "id-badge", name = locale('field_unit'), value = LocalPlayer.state.callsign or locale('unknown') }
         }
     })
 
-    lib.notify({ title = 'Dispatch', description = 'Botão de pânico acionado!', type = 'error' })
+    lib.notify({ title = 'Dispatch', description = locale('panic_triggered'), type = 'error' })
 end
 
 RegisterCommand("panic", Panic, false)
@@ -138,7 +138,7 @@ CreateThread(function()
                         WaitTimer('Speeding', function()
                             TriggerAlert('speeding', {
                                 vehicle = vehicle,
-                                extras = { { icon = 'gauge-high', name = 'Velocidade', value = math.floor(speed) .. ' km/h' } }
+                                extras = { { icon = 'gauge-high', name = locale('field_speed'), value = math.floor(speed) .. ' km/h' } }
                             })
                         end)
                     end

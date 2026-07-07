@@ -4,7 +4,7 @@
 > mantendo a base de _requests_ player-to-player e a UI própria em React/shadcn.
 > A pasta `ps-dispatch/` no repo é apenas **referência** (não é um resource ativo).
 
-Última atualização: 2026-07-07 (Rodadas 2, 3 e 4 concluídas)
+Última atualização: 2026-07-07 (Rodadas 2, 3, 4 e 5 concluídas)
 
 ---
 
@@ -92,10 +92,20 @@ blip/alerta/menu e o fluxo attach→detach.
 > **Nota:** `refreshAlerts` usa `getCalls` (lista completa do servidor, sem filtro de job);
 > se necessário, filtrar no server numa rodada futura.
 
-### Rodada 5 — Localização (i18n)
-- ⬜ Sistema de locales (`lib.locale` / `ox:locale`) — hoje strings hardcoded em PT/EN misturado.
-- ⬜ Portar/adaptar `locales/*.json` (en, pt-br, es, fr, de, nl, cs).
-- ⬜ Trocar títulos/tags de `Config.Alerts` por chaves de locale.
+### Rodada 5 — Localização (i18n) ✅
+- ✅ Sistema de locales: `lib.locale()` inicializado em `shared/config.lua` (lê o convar
+  `ox:locale`, default `en`; defina `setr ox:locale "pt-br"` no server). Global `locale()`
+  disponível em client e server (config é `shared_script`).
+- ✅ `locales/*.json` criados para **en, pt-br, es, fr, de, nl, cs** (78 chaves cada,
+  paridade validada). pt-br/en revisados; es/fr/de/nl/cs são best-effort (revisar com nativos).
+- ✅ `Config.Alerts` sem literais: título resolvido de `alert_<name>`, `tag` virou chave de
+  categoria resolvida de `tag_<key>` (13 categorias).
+- ✅ Labels de campo, gênero, 911/311, pânico, notifies e o path de compat ps-dispatch
+  (`CustomAlert` client + `translatePsDispatch` server) todos via `locale()`.
+
+> **Nota:** o "chrome" estático da NUI React (botões Accept/Refuse, "Dispatch Panel", etc.)
+> ainda é hardcoded — os textos **dinâmicos** (títulos/tags/campos vindos do Lua) já são i18n.
+> Comandos de teste em `server/main.lua` e descrições de keybind não foram localizados (dev-only).
 
 ### Rodada 6 — Integração / gating (fechamento drop-in)
 - ⬜ **Phone gating** de fato: `Config.PhoneRequired`/`Config.PhoneItems` existem no ps mas

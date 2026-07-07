@@ -1,6 +1,11 @@
 print('^2[g5-request] Loading Config...^7')
 Config = {}
 
+-- i18n (Rodada 5): load the locale set selected by the `ox:locale` convar
+-- (defaults to 'en'; set `setr ox:locale "pt-br"` on the server). Makes the
+-- global `locale('key', ...)` available in every state that loads this shared file.
+lib.locale()
+
 -- Keybinds
 Config.OpenSettingsKey = 'F3'
 Config.OpenDispatchMenu = 'F2'
@@ -103,13 +108,14 @@ Config.Blips = {
 
 -- Alert Registry (data-driven).
 -- Each entry is a template consumed by the generic dispatcher (client/dispatch.lua -> TriggerAlert).
+-- Titles are resolved at trigger time from locale keys `alert_<name>` (see locales/*.json);
+-- `tag` is a category key resolved from `tag_<key>`. Rodada 5: no display literals here.
 -- Fields:
---   title    : headline shown in the alert / dispatch list
 --   code     : 10-code displayed before the title
 --   icon     : FontAwesome short name (rendered as `fa fa-<icon>`)
 --   priority : 1 = high (red), 2 = default, 3 = low
 --   groups   : recipient groups resolved through Config.JobMapping
---   tag      : short badge text (defaults to the code when omitted)
+--   tag      : category key -> locale `tag_<key>` (defaults to the code when omitted)
 --   vehicle  : true -> auto-gather & attach the player's current vehicle
 --   gender   : true -> include the player's gender
 --   weapon   : true -> include the player's current weapon
@@ -117,44 +123,44 @@ Config.Blips = {
 --   alertTime: override on-screen duration (seconds)
 Config.Alerts = {
     -- Automatic (event-driven) alerts
-    ['shooting']           = { title = 'Disparos de Arma de Fogo', code = '10-71', icon = 'crosshairs',  priority = 2, groups = { 'leo' }, tag = 'TIROS',    gender = true, weapon = true },
-    ['vehicleshots']       = { title = 'Disparos de Veículo',      code = '10-60', icon = 'gun',         priority = 2, groups = { 'leo' }, tag = 'TIROS',    vehicle = true, weapon = true },
-    ['vehicletheft']       = { title = 'Roubo de Veículo',         code = '10-60', icon = 'car',         priority = 2, groups = { 'leo' }, tag = 'ROUBO',    vehicle = true },
-    ['carjack']            = { title = 'Roubo de Veículo (Carjacking)', code = '10-35', icon = 'car',    priority = 2, groups = { 'leo' }, tag = 'ROUBO',    vehicle = true },
-    ['carboosting']        = { title = 'Roubo de Veículo (Boosting)',   code = '10-50', icon = 'car',    priority = 2, groups = { 'leo' }, tag = 'ROUBO',    vehicle = true },
-    ['speeding']           = { title = 'Excesso de Velocidade',    code = '10-94', icon = 'gauge-high',  priority = 2, groups = { 'leo' }, tag = 'TRÂNSITO', vehicle = true },
-    ['fight']              = { title = 'Briga / Agressão',         code = '10-10', icon = 'hand-fist',   priority = 2, groups = { 'leo' }, tag = 'BRIGA',    gender = true },
-    ['explosion']          = { title = 'Explosão',                 code = '10-80', icon = 'fire',        priority = 1, groups = { 'leo' }, tag = 'EXPLOSÃO' },
-    ['officerdown']        = { title = 'Oficial Abatido',          code = '10-13', icon = 'skull',       priority = 1, groups = { 'leo', 'ems' }, tag = 'URGENTE', unit = true, alertTime = 10 },
+    ['shooting']           = { code = '10-71', icon = 'crosshairs',  priority = 2, groups = { 'leo' }, tag = 'tiros',    gender = true, weapon = true },
+    ['vehicleshots']       = { code = '10-60', icon = 'gun',         priority = 2, groups = { 'leo' }, tag = 'tiros',    vehicle = true, weapon = true },
+    ['vehicletheft']       = { code = '10-60', icon = 'car',         priority = 2, groups = { 'leo' }, tag = 'roubo',    vehicle = true },
+    ['carjack']            = { code = '10-35', icon = 'car',         priority = 2, groups = { 'leo' }, tag = 'roubo',    vehicle = true },
+    ['carboosting']        = { code = '10-50', icon = 'car',         priority = 2, groups = { 'leo' }, tag = 'roubo',    vehicle = true },
+    ['speeding']           = { code = '10-94', icon = 'gauge-high',  priority = 2, groups = { 'leo' }, tag = 'transito', vehicle = true },
+    ['fight']              = { code = '10-10', icon = 'hand-fist',   priority = 2, groups = { 'leo' }, tag = 'briga',    gender = true },
+    ['explosion']          = { code = '10-80', icon = 'fire',        priority = 1, groups = { 'leo' }, tag = 'explosao' },
+    ['officerdown']        = { code = '10-13', icon = 'skull',       priority = 1, groups = { 'leo', 'ems' }, tag = 'urgente', unit = true, alertTime = 10 },
 
     -- Public/manual alerts (parity with ps-dispatch exports)
-    ['hunting']            = { title = 'Caça Ilegal',              code = '10-13', icon = 'gun',         priority = 2, groups = { 'leo' }, tag = 'CAÇA',     gender = true, weapon = true },
-    ['prisonbreak']        = { title = 'Fuga da Prisão',           code = '10-90', icon = 'person-running', priority = 2, groups = { 'leo' }, tag = 'FUGA',  gender = true },
-    ['storerobbery']       = { title = 'Assalto a Loja',           code = '10-90', icon = 'store',       priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['bankrobbery']        = { title = 'Assalto ao Banco Fleeca',  code = '10-90', icon = 'building-columns', priority = 2, groups = { 'leo' }, tag = 'ASSALTO', gender = true },
-    ['paletobankrobbery']  = { title = 'Assalto ao Banco de Paleto', code = '10-90', icon = 'building-columns', priority = 2, groups = { 'leo' }, tag = 'ASSALTO', gender = true },
-    ['pacificbankrobbery'] = { title = 'Assalto ao Pacific Standard', code = '10-90', icon = 'building-columns', priority = 2, groups = { 'leo' }, tag = 'ASSALTO', gender = true },
-    ['vangelicorobbery']   = { title = 'Assalto à Joalheria Vangelico', code = '10-90', icon = 'gem',   priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['houserobbery']       = { title = 'Invasão de Residência',    code = '10-90', icon = 'house',       priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['yachtheist']         = { title = 'Assalto ao Iate',          code = '10-65', icon = 'sailboat',    priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['artgalleryrobbery']  = { title = 'Assalto à Galeria de Arte',code = '10-90', icon = 'palette',     priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['humanelabsrobbery']  = { title = 'Assalto ao Humane Labs',   code = '10-90', icon = 'flask',       priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['trainrobbery']       = { title = 'Assalto ao Trem',          code = '10-90', icon = 'train',       priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['vanrobbery']         = { title = 'Assalto à Van',            code = '10-90', icon = 'van-shuttle', priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['undergroundrobbery'] = { title = 'Assalto Subterrâneo',      code = '10-90', icon = 'person-digging', priority = 2, groups = { 'leo' }, tag = 'ASSALTO', gender = true },
-    ['drugboatrobbery']    = { title = 'Assalto ao Barco de Drogas', code = '10-65', icon = 'ship',      priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['unionrobbery']       = { title = 'Assalto ao Depósito Union',code = '10-90', icon = 'truck-field', priority = 2, groups = { 'leo' }, tag = 'ASSALTO',  gender = true },
-    ['signrobbery']        = { title = 'Roubo de Placa',           code = '10-10', icon = 'signature',   priority = 2, groups = { 'leo' }, tag = 'ROUBO',    gender = true },
-    ['drugdealing']        = { title = 'Tráfico de Drogas',        code = '10-90', icon = 'cannabis',    priority = 2, groups = { 'leo' }, tag = 'DROGAS',   gender = true },
-    ['suspicioushandoff']  = { title = 'Venda Suspeita',           code = '10-13', icon = 'tablets',     priority = 2, groups = { 'leo' }, tag = 'SUSPEITO', gender = true },
-    ['susactivity']        = { title = 'Atividade Suspeita',       code = '10-66', icon = 'eye',         priority = 2, groups = { 'leo' }, tag = 'SUSPEITO', gender = true },
+    ['hunting']            = { code = '10-13', icon = 'gun',         priority = 2, groups = { 'leo' }, tag = 'caca',     gender = true, weapon = true },
+    ['prisonbreak']        = { code = '10-90', icon = 'person-running', priority = 2, groups = { 'leo' }, tag = 'fuga',  gender = true },
+    ['storerobbery']       = { code = '10-90', icon = 'store',       priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['bankrobbery']        = { code = '10-90', icon = 'building-columns', priority = 2, groups = { 'leo' }, tag = 'assalto', gender = true },
+    ['paletobankrobbery']  = { code = '10-90', icon = 'building-columns', priority = 2, groups = { 'leo' }, tag = 'assalto', gender = true },
+    ['pacificbankrobbery'] = { code = '10-90', icon = 'building-columns', priority = 2, groups = { 'leo' }, tag = 'assalto', gender = true },
+    ['vangelicorobbery']   = { code = '10-90', icon = 'gem',         priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['houserobbery']       = { code = '10-90', icon = 'house',       priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['yachtheist']         = { code = '10-65', icon = 'sailboat',    priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['artgalleryrobbery']  = { code = '10-90', icon = 'palette',     priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['humanelabsrobbery']  = { code = '10-90', icon = 'flask',       priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['trainrobbery']       = { code = '10-90', icon = 'train',       priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['vanrobbery']         = { code = '10-90', icon = 'van-shuttle', priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['undergroundrobbery'] = { code = '10-90', icon = 'person-digging', priority = 2, groups = { 'leo' }, tag = 'assalto', gender = true },
+    ['drugboatrobbery']    = { code = '10-65', icon = 'ship',        priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['unionrobbery']       = { code = '10-90', icon = 'truck-field', priority = 2, groups = { 'leo' }, tag = 'assalto',  gender = true },
+    ['signrobbery']        = { code = '10-10', icon = 'signature',   priority = 2, groups = { 'leo' }, tag = 'roubo',    gender = true },
+    ['drugdealing']        = { code = '10-90', icon = 'cannabis',    priority = 2, groups = { 'leo' }, tag = 'drogas',   gender = true },
+    ['suspicioushandoff']  = { code = '10-13', icon = 'tablets',     priority = 2, groups = { 'leo' }, tag = 'suspeito', gender = true },
+    ['susactivity']        = { code = '10-66', icon = 'eye',         priority = 2, groups = { 'leo' }, tag = 'suspeito', gender = true },
 
     -- EMS / officer alerts
-    ['civdown']            = { title = 'Pessoa Ferida',            code = '10-69', icon = 'face-dizzy',  priority = 1, groups = { 'ems' }, tag = 'MÉDICO',   gender = true, alertTime = 10 },
-    ['civdead']            = { title = 'Pessoa Sem Vida',          code = '10-69', icon = 'skull',       priority = 1, groups = { 'ems' }, tag = 'MÉDICO',   gender = true, alertTime = 10 },
-    ['officerbackup']      = { title = 'Reforço Solicitado',       code = '10-32', icon = 'shield-halved', priority = 1, groups = { 'leo', 'ems' }, tag = 'REFORÇO', unit = true, alertTime = 10 },
-    ['officerdistress']    = { title = 'Oficial em Perigo',        code = '10-99', icon = 'triangle-exclamation', priority = 1, groups = { 'leo', 'ems' }, tag = 'URGENTE', unit = true, alertTime = 10 },
-    ['emsdown']            = { title = 'Paramédico Abatido',       code = '10-99', icon = 'truck-medical', priority = 1, groups = { 'leo', 'ems' }, tag = 'URGENTE', unit = true, alertTime = 10 },
+    ['civdown']            = { code = '10-69', icon = 'face-dizzy',  priority = 1, groups = { 'ems' }, tag = 'medico',   gender = true, alertTime = 10 },
+    ['civdead']            = { code = '10-69', icon = 'skull',       priority = 1, groups = { 'ems' }, tag = 'medico',   gender = true, alertTime = 10 },
+    ['officerbackup']      = { code = '10-32', icon = 'shield-halved', priority = 1, groups = { 'leo', 'ems' }, tag = 'reforco', unit = true, alertTime = 10 },
+    ['officerdistress']    = { code = '10-99', icon = 'triangle-exclamation', priority = 1, groups = { 'leo', 'ems' }, tag = 'urgente', unit = true, alertTime = 10 },
+    ['emsdown']            = { code = '10-99', icon = 'truck-medical', priority = 1, groups = { 'leo', 'ems' }, tag = 'urgente', unit = true, alertTime = 10 },
 }
 
 -- Colors for vehicle data (GTA V color id -> name)
