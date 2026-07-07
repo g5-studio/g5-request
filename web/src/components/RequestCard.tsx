@@ -8,6 +8,7 @@ import { VehicleInfo } from "./molecules/VehicleInfo";
 import { Icon } from "./atoms/Icon";
 import { noop } from "../utils/misc";
 import { RequestData } from "../types";
+import { useI18n } from "../i18n";
 
 type Props = {
   req: RequestData;
@@ -52,6 +53,7 @@ const RequestCard: React.FC<Props> = ({
   const durationRef = useRef<number>(req.timeout ?? 8000);
   const rafRef = useRef<number | null>(null);
   const { themes } = useTheme();
+  const { t } = useI18n();
 
   // Pega o tema para aplicar inline como fallback
   const themeType = req.themeType || "default";
@@ -232,7 +234,7 @@ const RequestCard: React.FC<Props> = ({
           <div className="mt-2 pt-2 border-t border-white/5">
             <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1 flex items-center gap-1">
               <Icon name="users" />
-              <span>Responding Units</span>
+              <span>{t("card.responding_units")}</span>
             </div>
             <div className="flex flex-wrap gap-1">
               {req.units.map((u, i) => (
@@ -254,7 +256,7 @@ const RequestCard: React.FC<Props> = ({
             variant="accept"
             onClick={onAccept}
             shortcutKey={acceptKey}
-            label={req.acceptText ?? "Accept"}
+            label={req.acceptText ?? t("action.accept")}
             className="group pr-2"
           />
 
@@ -263,7 +265,7 @@ const RequestCard: React.FC<Props> = ({
               variant="deny"
               onClick={noop}
               shortcutKey={denyKey}
-              label={req.denyText ?? "Refuse"}
+              label={req.denyText ?? t("action.refuse")}
               className="group pr-2"
             />
           )}

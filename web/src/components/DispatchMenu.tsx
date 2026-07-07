@@ -9,6 +9,7 @@ import { ExpirationTimer } from "./molecules/ExpirationTimer";
 import { ActionBtn } from "./molecules/RequestActions";
 import { VehicleInfo } from "./molecules/VehicleInfo";
 import { Icon } from "./atoms/Icon";
+import { useI18n } from "../i18n";
 
 type HistoryItem = {
     id: string;
@@ -49,6 +50,7 @@ const DispatchItem: React.FC<{
     myCallsign?: string;
 }> = ({ item, onLocate, onAccept, onDeny, onDetach, myCallsign }) => {
     const req = item.data;
+    const { t } = useI18n();
 
     // The local player is "en route" when their callsign is among the units.
     const isAttached =
@@ -100,7 +102,7 @@ const DispatchItem: React.FC<{
                             onClick={() => onLocate(req)}
                             icon="map-marker"
                             className="h-8 px-3"
-                            title="Marcar no GPS"
+                            title={t("menu.locate_title")}
                         />
                     )}
 
@@ -109,17 +111,17 @@ const DispatchItem: React.FC<{
                         variant="deny"
                         onClick={() => onDetach(item)}
                         icon="right-from-bracket"
-                        label="En route"
+                        label={t("menu.enroute")}
                         className="h-8 px-3"
-                        title="Sair de en-route"
+                        title={t("menu.enroute_title")}
                     />
                 ) : (
                     <ActionBtn
                         variant="accept"
                         onClick={() => onAccept(item)}
-                        label={req.acceptText ?? "Accept"}
+                        label={req.acceptText ?? t("action.accept")}
                         className="h-8 px-3"
-                        title="Accept"
+                        title={t("action.accept")}
                     />
                 )}
 
@@ -127,9 +129,9 @@ const DispatchItem: React.FC<{
                     <ActionBtn
                         variant="deny"
                         onClick={() => onDeny(item)}
-                        label={req.denyText ?? "Deny"}
+                        label={req.denyText ?? t("action.deny")}
                         className="h-8 px-3"
-                        title="Deny"
+                        title={t("action.deny")}
                     />
                 )}
             </div>
@@ -160,6 +162,7 @@ const DispatchMenu: React.FC<Props> = ({
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState<"history" | "settings">("history");
     const [alertsEnabled, setAlertsEnabled] = useState(true);
+    const { t } = useI18n();
 
     const toggleAlerts = () => {
         fetchNui<{ disabled?: boolean }>("toggleAlerts")
@@ -203,7 +206,7 @@ const DispatchMenu: React.FC<Props> = ({
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-3">
                                 <i className="fa fa-list-alt text-lg text-primary"></i>
-                                <CardTitle className="text-xl font-bold tracking-wide">Dispatch Panel</CardTitle>
+                                <CardTitle className="text-xl font-bold tracking-wide">{t("menu.title")}</CardTitle>
                             </div>
 
                             {/* Tabs */}
@@ -212,13 +215,13 @@ const DispatchMenu: React.FC<Props> = ({
                                     onClick={() => setActiveTab("history")}
                                     className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === "history" ? "bg-white/10 text-white shadow-sm" : "text-muted-foreground hover:text-white/70"}`}
                                 >
-                                    History <span className="ml-2 opacity-50 text-[10px]">{history.length}</span>
+                                    {t("menu.tab_history")} <span className="ml-2 opacity-50 text-[10px]">{history.length}</span>
                                 </button>
                                 <button
                                     onClick={() => setActiveTab("settings")}
                                     className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === "settings" ? "bg-white/10 text-white shadow-sm" : "text-muted-foreground hover:text-white/70"}`}
                                 >
-                                    Settings
+                                    {t("menu.tab_settings")}
                                 </button>
                             </div>
                         </div>
@@ -227,7 +230,7 @@ const DispatchMenu: React.FC<Props> = ({
                             {activeTab === "history" && (
                                 <input
                                     type="text"
-                                    placeholder="Search..."
+                                    placeholder={t("menu.search")}
                                     className="h-8 bg-black/20 border border-white/10 rounded px-3 text-sm focus:outline-none focus:border-primary/50 transition-colors"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -239,16 +242,16 @@ const DispatchMenu: React.FC<Props> = ({
                                     <button
                                         onClick={() => fetchNui("refreshAlerts").catch(() => { })}
                                         className="text-xs bg-white/5 text-muted-foreground px-3 py-1.5 rounded hover:bg-white/10 hover:text-white transition-colors border border-white/10 flex items-center gap-1.5"
-                                        title="Recarregar alertas ativos do servidor"
+                                        title={t("menu.refresh_title")}
                                     >
-                                        <Icon name="rotate" /> Refresh
+                                        <Icon name="rotate" /> {t("menu.refresh")}
                                     </button>
                                     <button
                                         onClick={() => fetchNui("clearBlips").catch(() => { })}
                                         className="text-xs bg-white/5 text-muted-foreground px-3 py-1.5 rounded hover:bg-white/10 hover:text-white transition-colors border border-white/10 flex items-center gap-1.5"
-                                        title="Limpar todos os blips do mapa"
+                                        title={t("menu.clear_blips_title")}
                                     >
-                                        <Icon name="map-location-dot" /> Clear Blips
+                                        <Icon name="map-location-dot" /> {t("menu.clear_blips")}
                                     </button>
                                     <button
                                         onClick={toggleAlerts}
@@ -256,16 +259,16 @@ const DispatchMenu: React.FC<Props> = ({
                                             ? "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white border-white/10"
                                             : "bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20"
                                             }`}
-                                        title="Ativar/desativar recebimento de alertas"
+                                        title={t("menu.alerts_title")}
                                     >
                                         <Icon name={alertsEnabled ? "bell" : "bell-slash"} />
-                                        {alertsEnabled ? "Alerts On" : "Alerts Off"}
+                                        {alertsEnabled ? t("menu.alerts_on") : t("menu.alerts_off")}
                                     </button>
                                     <button
                                         onClick={onClear}
                                         className="text-xs bg-red-500/10 text-red-500 px-3 py-1.5 rounded hover:bg-red-500/20 transition-colors border border-red-500/20"
                                     >
-                                        Clear All
+                                        {t("menu.clear_all")}
                                     </button>
                                 </>
                             )}
@@ -287,7 +290,7 @@ const DispatchMenu: React.FC<Props> = ({
                         filtered.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-50">
                                 <i className="fa fa-inbox text-4xl mb-4"></i>
-                                <p>No dispatch history found</p>
+                                <p>{t("menu.empty")}</p>
                             </div>
                         ) : (
                             <div className="space-y-1">
@@ -312,17 +315,17 @@ const DispatchMenu: React.FC<Props> = ({
                                 <div>
                                     <Label className="text-lg font-semibold flex items-center gap-2">
                                         <Icon name="user-tag" />
-                                        Callsign Identity
+                                        {t("settings.callsign")}
                                     </Label>
                                     <p className="text-sm text-muted-foreground mt-1">
-                                        Identification used when responding to dispatch calls.
+                                        {t("settings.callsign_desc")}
                                     </p>
                                 </div>
                                 <input
                                     type="text"
                                     value={callsign}
                                     onChange={(e) => setCallsign(e.target.value.toUpperCase())}
-                                    placeholder="EX: 4-LINCOLN-1"
+                                    placeholder={t("settings.callsign_placeholder")}
                                     className="flex h-12 w-full rounded-md border border-white/10 bg-black/20 px-4 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 uppercase font-mono tracking-wider"
                                 />
                             </div>
@@ -334,10 +337,10 @@ const DispatchMenu: React.FC<Props> = ({
                                 <div className="space-y-1">
                                     <Label className="text-base font-semibold flex items-center gap-2">
                                         <Icon name={isMuted ? "bell-slash" : "bell"} />
-                                        Mute Notifications
+                                        {t("settings.mute")}
                                     </Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Hide regular dispatch requests, only showing system alerts.
+                                        {t("settings.mute_desc")}
                                     </p>
                                 </div>
 
@@ -364,10 +367,10 @@ const DispatchMenu: React.FC<Props> = ({
                                 <div className="space-y-1">
                                     <Label className="text-base font-semibold flex items-center gap-2">
                                         <Icon name="compress" />
-                                        Compact Mode
+                                        {t("settings.compact")}
                                     </Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Display localized notifications in a reduced size.
+                                        {t("settings.compact_desc")}
                                     </p>
                                 </div>
 
@@ -394,10 +397,10 @@ const DispatchMenu: React.FC<Props> = ({
                                 <div className="space-y-1">
                                     <Label className="text-base font-semibold flex items-center gap-2">
                                         <Icon name="layer-group" />
-                                        Keep Requests Visible
+                                        {t("settings.keep_open")}
                                     </Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Keep the request list on screen even when the menu is closed.
+                                        {t("settings.keep_open_desc")}
                                     </p>
                                 </div>
 

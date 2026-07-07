@@ -106,6 +106,7 @@ RegisterNetEvent(resourceName..':client:nuiReady', function()
         acceptKey = acceptKeybind.currentKey or Config.AcceptKey,
         denyKey = denyKeybind.currentKey or Config.DenyKey,
         position = Config.Position or 'top-right',
+        locale = GetConvar('ox:locale', 'en'),
         themes = Themes
     })
 end)
@@ -138,6 +139,7 @@ RegisterNetEvent(resourceName..':client:add', function(requestData)
             acceptKey = acceptKeybind.currentKey or Config.AcceptKey,
             denyKey = denyKeybind.currentKey or Config.DenyKey,
             position = Config.Position or 'top-right',
+            locale = GetConvar('ox:locale', 'en'),
             themes = Themes
         })
         SendNUIMessage({action = 'add', request = requestData})

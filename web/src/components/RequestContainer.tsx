@@ -5,6 +5,7 @@ import { isEnvBrowser } from "../utils/misc";
 import { fetchNui } from "../utils/fetchNui";
 import DispatchMenu from "./DispatchMenu";
 import { RequestData } from "../types";
+import { useI18n } from "../i18n";
 
 type RecordItem = {
     id: string;
@@ -41,6 +42,7 @@ const RequestContainer: React.FC = () => {
     const [isMuted, setIsMuted] = useState(false);
     const [shortMode, setShortMode] = useState(false);
     const [keepRequestsOpen, setKeepRequestsOpen] = useState(true);
+    const { setLocale } = useI18n();
 
     // Sync settings with server (example)
     useEffect(() => {
@@ -112,6 +114,7 @@ const RequestContainer: React.FC = () => {
                     if (d.acceptKey) acceptKeyRef.current = d.acceptKey;
                     if (d.denyKey) denyKeyRef.current = d.denyKey;
                     if (d.position) setPosition(d.position === "top-left" ? "top-left" : "top-right");
+                    if (d.locale) setLocale(d.locale);
                     break;
                 case "add":
                     if (d.request) addRequest(d.request);
@@ -141,7 +144,7 @@ const RequestContainer: React.FC = () => {
         fetchNui("nuiReady", {}).catch(() => { });
 
         return () => window.removeEventListener("message", handler);
-    }, [addRequest, removeRequest, flashAccept, flashDeny, prolongRequest]);
+    }, [addRequest, removeRequest, flashAccept, flashDeny, prolongRequest, setLocale]);
 
     const clearHistory = () => {
         // Optionally alert server that we cleared local history?

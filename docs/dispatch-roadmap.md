@@ -4,7 +4,7 @@
 > mantendo a base de _requests_ player-to-player e a UI própria em React/shadcn.
 > A pasta `ps-dispatch/` no repo é apenas **referência** (não é um resource ativo).
 
-Última atualização: 2026-07-07 (Rodadas 2, 3, 4, 5 e 6 concluídas)
+Última atualização: 2026-07-07 (Rodadas 2, 3, 4, 5, 6 e 7 concluídas)
 
 ---
 
@@ -103,8 +103,7 @@ blip/alerta/menu e o fluxo attach→detach.
 - ✅ Labels de campo, gênero, 911/311, pânico, notifies e o path de compat ps-dispatch
   (`CustomAlert` client + `translatePsDispatch` server) todos via `locale()`.
 
-> **Nota:** o "chrome" estático da NUI React (botões Accept/Refuse, "Dispatch Panel", etc.)
-> ainda é hardcoded — os textos **dinâmicos** (títulos/tags/campos vindos do Lua) já são i18n.
+> **Nota:** o "chrome" estático da NUI React foi localizado na **Rodada 7** (abaixo).
 > Comandos de teste em `server/main.lua` e descrições de keybind não foram localizados (dev-only).
 
 ### Rodada 6 — Integração / gating (fechamento drop-in) ✅
@@ -121,6 +120,23 @@ blip/alerta/menu e o fluxo attach→detach.
   quando `job.onDuty` está presente.
 - ✅ `weaponTable` completa (44 entradas, classes 1–5 + Taser) portada da referência
   em `client/utils.lua`.
+
+### Rodada 7 — i18n do "chrome" estático da NUI (React) ✅
+- ✅ Sistema de i18n do front: `web/src/i18n/` com `translations.ts` (dicionários
+  **en, pt-br, es, fr, de, nl, cs** — 29 chaves de UI cada) + `index.tsx` (`I18nProvider`
+  + hook `useI18n().t(key)`, com normalização de código de locale e fallback en→key).
+- ✅ Todo o texto fixo localizado: `DispatchMenu` (título, abas, busca, toolbar
+  Refresh/Clear Blips/Alerts/Clear All, estado vazio, aba Settings inteira, títulos/tooltips)
+  e `RequestCard` ("Responding Units", Accept/Refuse — respeitando `acceptText`/`denyText`
+  do servidor quando presentes).
+- ✅ Locale propagado do Lua para a NUI: `client/request.lua` envia
+  `locale = GetConvar('ox:locale', 'en')` nas mensagens `init`; a NUI seleciona o dicionário.
+  Assim o front acompanha o **mesmo** convar `ox:locale` do lado Lua.
+- ✅ `web/build` regenerado (`npm run build`, tsc + vite OK).
+
+> **Nota:** as chaves de UI são **separadas** das `locales/*.json` do Lua (que traduzem o
+> conteúdo dinâmico dos alertas). en/pt-br revisados; es/fr/de/nl/cs best-effort.
+> O `DevPanel` (dev-only, só aparece em browser) não foi localizado.
 
 > **Notas de portabilidade ESX:** handcuff cai em `GetPedConfigFlag(ped, 292)` (fail-safe),
 > duty é fail-open quando nenhum recurso popula `job.onDuty`, e itens usam `ox_inventory`
