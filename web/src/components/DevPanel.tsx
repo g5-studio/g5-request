@@ -249,6 +249,22 @@ const DevPanel: React.FC = () => {
               <i className="fa fa-paint-brush" /> Apply Theme
             </MriButton>
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <MriButton
+              size="sm"
+              variant="secondary"
+              onClick={() => sendMessage({ action: "openDispatch" })}
+            >
+              <i className="fa fa-list" /> Despacho (F2)
+            </MriButton>
+            <MriButton
+              size="sm"
+              variant="secondary"
+              onClick={() => sendMessage({ action: "openSettings" })}
+            >
+              <i className="fa fa-gear" /> Ajustes (F3)
+            </MriButton>
+          </div>
         </div>
 
         {/* Custom JSON */}

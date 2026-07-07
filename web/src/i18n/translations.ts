@@ -39,6 +39,10 @@ const en: Dict = {
   "action.deny": "Deny",
   "action.refuse": "Refuse",
   "card.responding_units": "Responding Units",
+  "card.vehicle_info": "Vehicle Information",
+  "card.plate": "Plate",
+  "card.model": "Model",
+  "card.color": "Color",
 };
 
 const ptbr: Dict = {
@@ -71,6 +75,10 @@ const ptbr: Dict = {
   "action.deny": "Recusar",
   "action.refuse": "Recusar",
   "card.responding_units": "Unidades a Caminho",
+  "card.vehicle_info": "Informações do Veículo",
+  "card.plate": "Placa",
+  "card.model": "Modelo",
+  "card.color": "Cor",
 };
 
 const es: Dict = {
@@ -104,6 +112,10 @@ const es: Dict = {
   "action.deny": "Rechazar",
   "action.refuse": "Rechazar",
   "card.responding_units": "Unidades en Camino",
+  "card.vehicle_info": "Información del Vehículo",
+  "card.plate": "Matrícula",
+  "card.model": "Modelo",
+  "card.color": "Color",
 };
 
 const fr: Dict = {
@@ -137,6 +149,10 @@ const fr: Dict = {
   "action.deny": "Refuser",
   "action.refuse": "Refuser",
   "card.responding_units": "Unités en Route",
+  "card.vehicle_info": "Informations du Véhicule",
+  "card.plate": "Plaque",
+  "card.model": "Modèle",
+  "card.color": "Couleur",
 };
 
 const de: Dict = {
@@ -170,6 +186,10 @@ const de: Dict = {
   "action.deny": "Ablehnen",
   "action.refuse": "Ablehnen",
   "card.responding_units": "Einsatzkräfte",
+  "card.vehicle_info": "Fahrzeuginformationen",
+  "card.plate": "Kennzeichen",
+  "card.model": "Modell",
+  "card.color": "Farbe",
 };
 
 const nl: Dict = {
@@ -203,6 +223,10 @@ const nl: Dict = {
   "action.deny": "Weigeren",
   "action.refuse": "Weigeren",
   "card.responding_units": "Reagerende Eenheden",
+  "card.vehicle_info": "Voertuiginformatie",
+  "card.plate": "Kenteken",
+  "card.model": "Model",
+  "card.color": "Kleur",
 };
 
 const cs: Dict = {
@@ -235,6 +259,10 @@ const cs: Dict = {
   "action.deny": "Odmítnout",
   "action.refuse": "Odmítnout",
   "card.responding_units": "Zasahující Jednotky",
+  "card.vehicle_info": "Informace o Vozidle",
+  "card.plate": "SPZ",
+  "card.model": "Model",
+  "card.color": "Barva",
 };
 
 export const translations: Record<string, Dict> = {

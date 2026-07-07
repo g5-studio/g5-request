@@ -33,8 +33,8 @@ const RequestContainer: React.FC = () => {
     const acceptKeyRef = useRef("Y");
     const denyKeyRef = useRef("N");
     const [position, setPosition] = useState<"top-right" | "top-left">("top-right");
-    const [showSettings] = useState(false);
     const [showDispatch, setShowDispatch] = useState(false);
+    const [initialTab, setInitialTab] = useState<"history" | "settings">("history");
     const [callsign, setCallsign] = useState(() => {
         const saved = localStorage.getItem("g5_callsign");
         return saved || "";
@@ -132,6 +132,11 @@ const RequestContainer: React.FC = () => {
                     if (d.id) prolongRequest(String(d.id), d.set);
                     break;
                 case "openDispatch":
+                    setInitialTab("history");
+                    setShowDispatch(true);
+                    break;
+                case "openSettings":
+                    setInitialTab("settings");
                     setShowDispatch(true);
                     break;
                 case "updateCallsign":
@@ -226,7 +231,7 @@ const RequestContainer: React.FC = () => {
                 onToggleKeepRequestsOpen={setKeepRequestsOpen}
                 callsign={callsign}
                 setCallsign={setCallsign}
-                initialTab={showSettings ? "settings" : "history"}
+                initialTab={initialTab}
             />
         </div>
     );
