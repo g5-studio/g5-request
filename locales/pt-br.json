@@ -79,5 +79,18 @@
   "alerts_enabled": "Alertas reativados.",
   "callsign_updated": "Callsign atualizado para %s",
   "callsign_usage": "Uso: /callsign [texto]",
-  "need_phone": "Você precisa de um dispositivo de comunicação para isso."
+  "need_phone": "Você precisa de um dispositivo de comunicação para isso.",
+  "admin_err_invalid_payload": "Payload inválido.",
+  "admin_err_no_permission": "Você não tem permissão para alterar esta seção.",
+  "admin_err_save_failed": "Falha ao salvar a configuração em disco.",
+  "admin_err_bad_field": "Valor inválido para o campo '%s'.",
+  "admin_err_out_of_range": "Valor de '%s' está fora do intervalo permitido.",
+  "admin_err_alert_key": "A chave do alerta é obrigatória.",
+  "admin_err_alert_shape": "Definição de alerta inválida: %s.",
+  "admin_err_alert_code": "O alerta '%s' precisa de um código.",
+  "admin_err_alert_icon": "O alerta '%s' precisa de um ícone.",
+  "admin_err_alert_priority": "O alerta '%s' tem prioridade inválida (1-3).",
+  "admin_err_alert_groups": "O alerta '%s' precisa de ao menos um grupo.",
+  "admin_err_blip_shape": "Definição de blip inválida: %s.",
+  "admin_reset_ok": "Configuração revertida para os padrões."
 }

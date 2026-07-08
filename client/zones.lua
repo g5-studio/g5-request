@@ -9,6 +9,11 @@ inNoDispatchZone = false
 CreateThread(function()
     -- Config is a shared_script; wait until it is populated.
     while not Config or not Config.Locations do Wait(100) end
+    -- Wait for the admin overlay to be applied so zones register with the
+    -- effective (post-overlay) coords. Falls through after ~5s if the callback
+    -- never resolves, using whatever Config.Locations currently holds.
+    local deadline = GetGameTimer() + 5000
+    while not ConfigOverlayApplied and GetGameTimer() < deadline do Wait(50) end
 
     -- Hunting Zones (sphere) ------------------------------------------------
     for _, hunting in pairs(Config.Locations.HuntingZones or {}) do

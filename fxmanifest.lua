@@ -34,5 +34,7 @@ provide "ps-dispatch"
 files {
     "web/build/index.html",
     "web/build/**/*",
-    "sounds/*.ogg"
+    "sounds/*.ogg",
+    "locales/*.json",
+    "data/*.json"
 }

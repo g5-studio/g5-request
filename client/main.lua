@@ -51,6 +51,53 @@ RegisterNUICallback('close', function(_, cb)
     cb({ok = true})
 end)
 
+-- ---------------------------------------------------------------------------
+-- Painel admin (standalone via comando + callbacks compartilhados com o modo
+-- embedded no mri_Qadmin). Os callbacks funcionam nos dois modos porque o
+-- iframe do Qadmin aponta para o proprio resource.
+-- ---------------------------------------------------------------------------
+
+local function openAdmin()
+    SetNuiFocus(true, true)
+    SendNUIMessage({ action = 'setVisible', data = true })
+    SendNUIMessage({ action = 'openAdmin', data = LastAdminSnapshot })
+end
+
+RegisterCommand('dispatchadmin', openAdmin, false)
+RegisterNetEvent(resourceName .. ':client:openAdmin', openAdmin)
+
+RegisterNUICallback('adminClose', function(_, cb)
+    SetNuiFocus(false, false)
+    SendNUIMessage({ action = 'closeAdmin' })
+    cb({ ok = true })
+end)
+
+-- Fetch on-demand (o modo embedded nao passa pelo comando que empurra o
+-- snapshot via SendNUIMessage).
+RegisterNUICallback('adminGetConfig', function(_, cb)
+    local snap = LastAdminSnapshot or lib.callback.await(resourceName .. ':server:getAdminConfig', false)
+    LastAdminSnapshot = snap
+    cb(snap or {})
+end)
+
+RegisterNUICallback('adminSaveConfig', function(payload, cb)
+    local ok, result = lib.callback.await(resourceName .. ':server:saveAdminConfig', false, payload)
+    if ok and type(result) == 'table' then LastAdminSnapshot = result end
+    cb({ success = ok == true, config = ok and result or nil, error = (not ok) and result or nil })
+end)
+
+RegisterNUICallback('adminResetConfig', function(_, cb)
+    local ok, result = lib.callback.await(resourceName .. ':server:resetAdminConfig', false)
+    if ok and type(result) == 'table' then LastAdminSnapshot = result end
+    cb({ success = ok == true, config = ok and result or nil, error = (not ok) and result or nil })
+end)
+
+RegisterNUICallback('adminGetMyCoords', function(_, cb)
+    local coords = GetEntityCoords(PlayerPedId())
+    local heading = GetEntityHeading(PlayerPedId())
+    cb({ x = coords.x, y = coords.y, z = coords.z, heading = heading })
+end)
+
 RegisterCommand("callsign", function(source, args, rawCommand)
     local callsign = args[1]
     if callsign then

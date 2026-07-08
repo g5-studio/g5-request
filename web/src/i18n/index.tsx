@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { translations, DEFAULT_LOCALE, Dict } from "./translations";
 
